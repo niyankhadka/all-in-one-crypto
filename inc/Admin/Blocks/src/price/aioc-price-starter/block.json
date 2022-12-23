@@ -1,0 +1,39 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 2,
+	"name": "all-in-one-crypto/aioc-price-starter",
+	"version": "1.0.0",
+	"title": "Crypto Price Starter",
+	"category": "all_in_one_crypto",
+	"icon": "admin-appearance",
+	"description": "Use crypto price starter block to select the type of price you want to use.",
+	"attributes": {
+		"message": {
+			"type": "string",
+			"source": "text",
+			"selector": "div"
+		}
+	},
+	"supports": {
+
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"__experimentalFontFamily": true,
+			"__experimentalFontStyle": true,
+			"__experimentalFontWeight": true,
+			"__experimentalLetterSpacing": true,
+			"__experimentalTextTransform": true,
+			"__experimentalTextDecoration": true,
+			"__experimentalDefaultControls": {
+				"fontSize": true,
+				"fontAppearance": true,
+				"textTransform": true
+			}
+		}
+	},
+	"textdomain": "aioc-price-starter",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css"
+}

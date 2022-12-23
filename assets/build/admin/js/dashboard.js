@@ -1,0 +1,1 @@
+!function(){"use strict";jQuery(document).ready(function(){document.querySelectorAll(".aioc-toggle_item").forEach(function(e){e.addEventListener("change",function(){e.classList.toggle("aioc-toggle_item_is-active")})})})}();

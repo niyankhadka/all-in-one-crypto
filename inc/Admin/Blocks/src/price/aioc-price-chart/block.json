@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 2,
+	"name": "all-in-one-crypto/aioc-price-chart",
+	"version": "1.0.0",
+	"title": "Crypto Price Chart",
+	"category": "all_in_one_crypto",
+	"icon": "chart-pie",
+	"description": "Use this to display crypto price in chart format.",
+	"attributes": {
+		"message": {
+			"type": "string",
+			"source": "text",
+			"selector": "div"
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"textdomain": "aioc-price-chart",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css"
+}

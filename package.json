@@ -1,0 +1,26 @@
+{
+  "name": "all-in-one-crypto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/niyankhadka/"
+  },
+  "keywords": [
+    "wordpress"
+  ],
+  "author": "niyankhadka",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-autoprefixer": "^8.0.0",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-sourcemaps": "^3.0.0",
+    "gulp-uglify": "^3.0.2"
+  }
+}

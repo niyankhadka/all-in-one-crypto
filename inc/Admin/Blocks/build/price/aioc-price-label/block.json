@@ -1,0 +1,45 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 2,
+  "name": "all-in-one-crypto/aioc-price-label",
+  "version": "1.0.0",
+  "title": "Crypto Price Label",
+  "category": "all_in_one_crypto",
+  "icon": "feedback",
+  "description": "Use this to display crypto price in label format.",
+  "attributes": {
+    "message": {
+      "type": "string",
+      "source": "text",
+      "default": "Hello from price label",
+      "selector": "div"
+    }
+  },
+  "example": {
+    "attributes": {
+      "message": "Example from price label!"
+    }
+  },
+  "supports": {
+    "html": false,
+    "typography": {
+      "fontSize": true,
+      "lineHeight": true,
+      "__experimentalFontFamily": true,
+      "__experimentalFontStyle": true,
+      "__experimentalFontWeight": true,
+      "__experimentalLetterSpacing": true,
+      "__experimentalTextTransform": true,
+      "__experimentalTextDecoration": true,
+      "__experimentalDefaultControls": {
+        "fontSize": true,
+        "fontAppearance": true,
+        "textTransform": true
+      }
+    }
+  },
+  "textdomain": "aioc-price-label",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css"
+}

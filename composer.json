@@ -1,0 +1,19 @@
+{
+    "name": "niyankhadka/all-in-one-crypto",
+    "description": "All crypto related solutions in one single plugin.",
+    "type": "project",
+    "license": "GPLv3",
+    "autoload": {
+        "psr-4": {
+            "Inc\\": "./inc"
+        }
+    },
+    "authors": [
+        {
+            "name": "niyankhadka",
+            "email": "niyankhadka.nk@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
