@@ -6,7 +6,8 @@
 import { 
 	PanelBody,
 	PanelRow,
-	Spinner
+	Spinner,
+	FormTokenField
  } from '@wordpress/components';
 
 /**
@@ -18,6 +19,10 @@ import {
 import { useBlockProps, RichText, InspectorControls } from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
+import { Component } from '@wordpress/element';
+
+import apiFetch from '@wordpress/api-fetch';
+import { useState, useEffect } from '@wordpress/element';
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -26,6 +31,54 @@ import { __ } from '@wordpress/i18n';
  * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
  */
  import './editor.scss';
+
+ function MyComponent() {
+
+    const [ error, setError ]       = useState( null );
+    const [ mypost, setPost ]       = useState( null );
+    const [ isLoaded, setIsLoaded ] = useState( false );
+
+	apiFetch( { path: 'aioc/v1/cryptoprice' } ).then(
+		( result ) => {
+			setIsLoaded( true );
+			setPost( result );
+		},
+		( error ) => {
+			setIsLoaded( true );
+			setError( error );
+		}
+	);
+
+    if ( error ) {
+        return <p>ERROR: { error.message }</p>;
+    } else if ( ! isLoaded ) {
+        return <Spinner />;
+    } else if ( mypost ) {
+        return <h3>Post loaded!</h3>;
+    }
+    return <p>No such post</p>;
+}
+
+function MyComponents() {
+    const { mypost, isLoading } = useSelect( ( select ) => {
+        const args = [ 'aioc/v1/cryptoprice' ];
+
+        return {
+            mypost: select( 'core' ).getEntityRecord( ...args ),
+            isLoading: select( 'core/data' ).isResolving( 'core', 'getEntityRecord', args )
+        };
+    } );
+
+	console.log(mypost);
+	console.log(isLoading);
+
+    if ( isLoading ) {
+        return <p>Loading post..</p>;
+    } else if ( mypost ) {
+        return <h3>Post loaded!</h3>;
+    }
+    return <p>No such post</p>;
+}
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -76,7 +129,59 @@ export default function Edit( { attributes, setAttributes } ) {
 					setAttributes( { message: val } )
 				}
 			/>
-			<span> { title ?? <Spinner /> }</span>
+			<span> 
+				{ title ?? <Spinner /> }
+			</span>
+			<MyComponents />
 		</p>
 	);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+class BlockEdit extends Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			list: [],
+			loading: true
+		}
+	}
+ 
+	componentDidMount() {
+		this.runApiFetch();
+	}
+ 
+	runApiFetch() {
+		wp.apiFetch({
+			path: 'aioc/v1/cryptoprice',
+		}).then(data => {
+			this.setState({
+				list: data,
+				loading: false
+			});
+		});
+	}
+ 
+	render() {
+		return(
+			<div>
+				{this.state.loading ? (
+					<Spinner />
+				) : (
+					<p>Data is ready!</p>
+				)}
+			</div>
+		);
+ 
+	}
 }

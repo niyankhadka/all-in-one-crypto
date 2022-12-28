@@ -25,9 +25,23 @@ class CryptoPrice extends BaseController
 
 	public $subpages = array();
 
+	private $wpdb;
+
+	private $tablename;
+
+	public $price_db_version;
+
 	public function register() {
 
 		if ( ! $this->get_settings()['enable_price'] ) return;
+
+		global $wpdb;
+
+		$this->wpdb = $wpdb;
+
+		$this->tablename = $this->wpdb->base_prefix . "all_in_one_crypto_prices";
+
+		$this->price_db_version = '1.0.0';
 
 		$this->settings = new SettingsApi();
 
@@ -37,6 +51,8 @@ class CryptoPrice extends BaseController
 
 		$this->settings->addSubPages( $this->subpages )->register();
 
+		add_action( 'admin_init', array( $this, 'setPriceDBTable' ) );
+		
 		add_action( 'init', array( $this, 'registerCustomPostTypes' ) );
 		add_action( 'add_meta_boxes', array( $this,'registerPriceShortcodeMetaBox') );
 
@@ -46,6 +62,59 @@ class CryptoPrice extends BaseController
 		add_shortcode( 'aioc_price', array( $this, 'addShortcode' ) );
 
 		add_action( 'aiocRegisterBlocks', array( $this, 'registerPriceBlocks' ) );
+
+		add_action( 'rest_api_init', array( $this, 'registerPriceRestApi' ) );
+
+	}
+
+	public function setPriceDBTable() {
+
+		global $wpdb;
+
+		$table_name = $wpdb->base_prefix . "all_in_one_crypto_prices";
+
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$sql = "CREATE TABLE IF NOT EXISTS `{$table_name}` (
+			`id` mediumint(9) NOT NULL AUTO_INCREMENT,
+			`name` varchar(100) NOT NULL,
+			`symbol` varchar(10) NOT NULL,
+			`slug` varchar(100) NOT NULL,
+			`img` varchar(200) NOT NULL,
+			`rank` int(5) NOT NULL,
+			`price_usd` decimal(24,14) NOT NULL,
+			`price_btc` decimal(10,8) NOT NULL,
+			`volume_usd_24h` decimal(22,2) NOT NULL,
+			`market_cap_usd` decimal(22,2) NOT NULL,
+			`high_24h` decimal(20,10) NOT NULL,
+			`low_24h` decimal(20,10) NOT NULL,
+			`available_supply` decimal(22,2) NOT NULL,
+			`total_supply` decimal(22,2) NOT NULL,
+			`ath` decimal(20,10) NOT NULL,
+			`ath_date` int(11) UNSIGNED NOT NULL,
+			`price_change_24h` decimal(20,10) NOT NULL,
+			`percent_change_1h` decimal(7,2) NOT NULL,
+			`percent_change_24h` decimal(7,2) NOT NULL,
+			`percent_change_7d` decimal(7,2) NOT NULL,
+			`percent_change_30d` decimal(7,2) NOT NULL,
+			`weekly` longtext NOT NULL,
+			`weekly_expire` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			`keywords` varchar(255) NOT NULL,
+			`custom` text NULL,
+			UNIQUE KEY `id` (`id`),
+			UNIQUE (`slug`)
+		) $charset_collate;";
+
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		dbDelta($sql);
+
+		$prices_options = array(
+
+			'db_version' => $this->price_db_version,
+
+		);
+
+		add_option( 'all_in_one_crypto_price', $prices_options );
 
 	}
 
@@ -166,7 +235,7 @@ class CryptoPrice extends BaseController
 
 		return $ncolumns;
 
-     }
+    }
 	 
 	public function customEditColumns( $column, $post_id ) {
 
@@ -209,9 +278,18 @@ class CryptoPrice extends BaseController
         register_block_type( $this->plugin_path . 'inc/Admin/Blocks/build/price/aioc-price-label', 
             [ 
                 'render_callback' => [ $this, 'blockPriceLabelCallback' ] 
-            ] );
+            ] 
+		);
 
 		register_block_type( $this->plugin_path . 'inc/Admin/Blocks/build/price/aioc-price-chart' );
+
+		// wp_localize_script( 'all-in-one-crypto-aioc-price-label-editor-script', 'price_label_obj',
+        //     array( 
+        //         'symbol' => 'BTC',
+        //         'name' => 'Bitcoin',
+        //         'price' => '123',
+        //     )
+        // );
         
     }
 
@@ -226,5 +304,150 @@ class CryptoPrice extends BaseController
         return ob_get_clean();
 
     }
+
+	/**
+	 * Register rest api
+     * 
+	 * @since    1.0.0
+	 */
+	public function registerPriceRestApi() {
+
+		register_rest_route( 'aioc/v1', '/cryptoprice/(?P<query>[a-z]+)/(?P<slug>[a-z]+)', [
+			'method' => 'GET',
+			'callback' => [ $this, 'restRouteCryptoPrice' ],
+			'permission_callback' => '__return_true'
+		]);
+
+	}
+
+	/**
+	 * Return crypto prices api
+     * 
+	 * @since    1.0.0
+	 */
+	public function restRouteCryptoPrice( $data ) {
+
+		if( !empty( $data ) ) {
+
+			$this->fetchCryptoPrices();
+
+			$response = $this->queryCryptoPrices( $data['query'], $data['slug'] );
+
+			if( empty( $response ) || ! $response ) {
+
+				$response = 'Data Not Found';
+
+			}
+
+		} else {
+
+			$response = 'Invalid Arguments Passed';
+		
+		}
+
+		return rest_ensure_response($response);
+
+	}
+
+	/**
+	 * Get crypto prices from source api
+     * 
+	 * @since    1.0.0
+	 */
+	public function fetchCryptoPrices() {
+
+		$cache = get_transient('all-in-one-crypto-fetch-prices-datatime');
+
+		$config['api'] = 'default';
+		$config['api_interval'] = 900;
+            
+		$api_interval = ($config['api'] == 'default') ? 900 : $config['api_interval'];
+
+		if ($cache === false || $cache < (time() - $api_interval)) {
+			
+			switch ($config['api']) {
+
+				case 'default':
+
+					$request = wp_remote_get('https://api.blocksera.com/v1/tickers');
+
+					if (is_wp_error($request) || wp_remote_retrieve_response_code($request) != 200) {
+						$this->wpdb->get_results("SELECT `slug` FROM `{$this->tablename}`");
+
+						if ($this->wpdb->num_rows > 0) {
+							set_transient('all-in-one-crypto-fetch-prices-datatime', time(), 60);
+						}
+						return false;
+					}
+
+					$body = wp_remote_retrieve_body($request);
+					$data = json_decode($body);
+
+					if (!empty($data)) {
+			
+							$this->wpdb->query("TRUNCATE `{$this->tablename}`");
+			
+							$btc_price = $data[0]->current_price;
+
+							$values = [];
+
+							foreach ($data as $coin) {
+								if (!($coin->market_cap === null || $coin->market_cap_rank === null)) {
+									$coin->price_btc = $coin->current_price / $btc_price;
+									$coin->image = strpos($coin->image, 'coingecko.com') ? strtok($coin->image, '?') : $this->plugin_url . 'assets/public/img/missing.png';
+									$values[] = array($coin->name, strtoupper($coin->symbol), $coin->id, $coin->image, $coin->market_cap_rank, floatval($coin->current_price), floatval($coin->price_btc), floatval($coin->total_volume), floatval($coin->market_cap), floatval($coin->high_24h), floatval($coin->low_24h), floatval($coin->circulating_supply), floatval($coin->total_supply), floatval($coin->ath), strtotime($coin->ath_date), floatval($coin->price_change_24h), floatval($coin->price_change_percentage_1h), floatval($coin->price_change_percentage_24h), floatval($coin->price_change_percentage_7d), floatval($coin->price_change_percentage_30d), gmdate("Y-m-d H:i:s"));
+								}
+							}
+
+							$values = array_chunk($values, 100, true);
+
+							foreach ($values as $chunk) {
+								$placeholder = "(%s, %s, %s, %s, %d, %0.14f, %0.8f, %0.2f, %0.2f, %0.10f, %0.10f, %0.2f, %0.2f, %0.10f, %d, %0.10f, %0.2f, %0.2f, %0.2f, %0.2f, %s)";
+								$query = "INSERT IGNORE INTO `{$this->tablename}` (`name`, `symbol`, `slug`, `img`, `rank`, `price_usd`, `price_btc`, `volume_usd_24h`, `market_cap_usd`, `high_24h`, `low_24h`, `available_supply`, `total_supply`, `ath`, `ath_date`, `price_change_24h`, `percent_change_1h`, `percent_change_24h`, `percent_change_7d`, `percent_change_30d`, `weekly_expire`) VALUES ";
+								$query .= implode(", ", array_fill(0, count($chunk), $placeholder));
+								$this->wpdb->query($this->wpdb->prepare($query, call_user_func_array('array_merge', $chunk)));
+							}
+							set_transient('all-in-one-crypto-fetch-prices-datatime', time());
+					}
+
+					break;
+			}
+
+		}
+
+	}
+
+	/**
+	 * Query crypto prices from database
+     * 
+	 * @since    1.0.0
+	 */
+	public function queryCryptoPrices( $query, $slug ) {
+
+		if( empty( $query ) && empty( $slug ) ) {
+
+			return false;
+		}
+
+		switch( $query ) {
+
+			case 'all' :
+
+				$response = $this->wpdb->get_row($this->wpdb->prepare("SELECT * FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
+				break;
+
+			case 'nasysl' :
+
+				$response = $this->wpdb->get_row($this->wpdb->prepare("SELECT `name`, `symbol`, `slug` FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
+				break;
+
+			default:
+				return false;
+
+		}
+
+		return $response;
+
+	}
 
 }

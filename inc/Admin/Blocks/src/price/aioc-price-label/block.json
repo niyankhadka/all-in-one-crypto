@@ -11,8 +11,12 @@
 		"message": {
 			"type": "string",
 			"source": "text",
-			"default": "Hello from price label",
+			"default": "",
 			"selector": "div"
+		},
+		"selectedCoins": {
+			"type": "array",
+			"default": ["bitcoin"]
 		}
 	},
 	"example": {
