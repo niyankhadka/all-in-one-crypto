@@ -39,3 +39,52 @@ echo "All in One Crypto Plugin CPT";
         </a>
     </div>        
 </div>
+<?php
+function ccpwp_get_allCoins(){
+	
+	$cache_name = 'ccpw-all-gecko-coins';
+	$api_url = "https://api.blocksera.com/v1/tickers";
+
+	$cache = get_transient( $cache_name );
+
+	if( $cache!='' || !empty( $cache ) ){
+		return $cache;
+	}
+
+	$request = wp_remote_get($api_url, array('timeout' => 120, 'sslverify' => false));
+    if (is_wp_error($request)) {
+        return 'false from request'; // Bail early
+    }
+    $body = wp_remote_retrieve_body($request);
+    
+	$response = json_decode($body);
+
+    debug( $response );
+	
+	if (!empty($data)) {
+
+        $btc_price = $data[0]->current_price;
+
+        $values = [];
+
+        foreach ($data as $coin) {
+            if (!($coin->market_cap === null || $coin->market_cap_rank === null)) {
+                $coin->price_btc = $coin->current_price / $btc_price;
+                $coin->image = strpos($coin->image, 'coingecko.com') ? strtok($coin->image, '?') : MCW_URL . 'assets/public/img/missing.png';
+                $values[] = array($coin->name, strtoupper($coin->symbol), $coin->id, $coin->image, $coin->market_cap_rank, floatval($coin->current_price), floatval($coin->price_btc), floatval($coin->total_volume), floatval($coin->market_cap), floatval($coin->high_24h), floatval($coin->low_24h), floatval($coin->circulating_supply), floatval($coin->total_supply), floatval($coin->ath), strtotime($coin->ath_date), floatval($coin->price_change_24h), floatval($coin->price_change_percentage_1h), floatval($coin->price_change_percentage_24h), floatval($coin->price_change_percentage_7d), floatval($coin->price_change_percentage_30d), gmdate("Y-m-d H:i:s"));
+            }
+        }
+
+        // $values = array_chunk($values, 100, true);
+
+        // foreach ($values as $chunk) {
+        //     $placeholder = "(%s, %s, %s, %s, %d, %0.14f, %0.8f, %0.2f, %0.2f, %0.10f, %0.10f, %0.2f, %0.2f, %0.10f, %d, %0.10f, %0.2f, %0.2f, %0.2f, %0.2f, %s)";
+        //     $query = "INSERT IGNORE INTO `{$this->tablename}` (`name`, `symbol`, `slug`, `img`, `rank`, `price_usd`, `price_btc`, `volume_usd_24h`, `market_cap_usd`, `high_24h`, `low_24h`, `available_supply`, `total_supply`, `ath`, `ath_date`, `price_change_24h`, `percent_change_1h`, `percent_change_24h`, `percent_change_7d`, `percent_change_30d`, `weekly_expire`) VALUES ";
+        //     $query .= implode(", ", array_fill(0, count($chunk), $placeholder));
+        //     $this->wpdb->query($this->wpdb->prepare($query, call_user_func_array('array_merge', $chunk)));
+        // }
+        // set_transient('mcw-datatime', time());
+    }
+
+}
+ccpwp_get_allCoins();
