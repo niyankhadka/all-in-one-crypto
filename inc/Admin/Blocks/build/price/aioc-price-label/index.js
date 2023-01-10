@@ -22,9 +22,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_data__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
-/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./editor.scss */ "./src/price/aioc-price-label/editor.scss");
+/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./editor.scss */ "./src/price/aioc-price-label/editor.scss");
 
 /**
  * WordPress components that create the necessary UI elements for the block
@@ -45,7 +43,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
  * Those files can contain any CSS code that gets applied to the editor.
@@ -53,48 +50,6 @@ __webpack_require__.r(__webpack_exports__);
  * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
  */
 
-function MyComponent() {
-  const [error, setError] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
-  const [mypost, setPost] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
-  const [isLoaded, setIsLoaded] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
-  _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_5___default()({
-    path: 'aioc/v1/cryptoprice'
-  }).then(result => {
-    setIsLoaded(true);
-    setPost(result);
-  }, error => {
-    setIsLoaded(true);
-    setError(error);
-  });
-  if (error) {
-    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "ERROR: ", error.message);
-  } else if (!isLoaded) {
-    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, null);
-  } else if (mypost) {
-    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", null, "Post loaded!");
-  }
-  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "No such post");
-}
-function MyComponents() {
-  const {
-    mypost,
-    isLoading
-  } = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_3__.useSelect)(select => {
-    const args = ['aioc/v1/cryptoprice'];
-    return {
-      mypost: select('core').getEntityRecord(...args),
-      isLoading: select('core/data').isResolving('core', 'getEntityRecord', args)
-    };
-  });
-  console.log(mypost);
-  console.log(isLoading);
-  if (isLoading) {
-    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "Loading post..");
-  } else if (mypost) {
-    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", null, "Post loaded!");
-  }
-  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "No such post");
-}
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -108,32 +63,32 @@ function MyComponents() {
  *
  * @return {WPElement} Element to render.
  */
-function Edit(_ref) {
-  let {
+function Edit(props) {
+  const {
     attributes,
     setAttributes
-  } = _ref;
+  } = props;
   const {
     title
   } = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_3__.useSelect)(select => {
     var _select$getSite;
     return (_select$getSite = select('core').getSite()) !== null && _select$getSite !== void 0 ? _select$getSite : {};
   });
-  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps)(), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InspectorControls, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
+  console.log(attributes.selectedCoins);
+  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps)(), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InspectorControls, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('General Settings')
-  }), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
+    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Select Coins')
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(BlockEdit, {
+    attributes: props.attributes,
+    setAttributes: props.setAttributes
+  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 1.1."))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Design Settings')
   }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Color Settings')
   }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 1.0."), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 1.1.")), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Typography Settings')
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 2.0."), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 2.1.")))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.RichText, {
-    tagName: "span",
-    value: attributes.message,
-    onChange: val => setAttributes({
-      message: val
-    })
-  }), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, title !== null && title !== void 0 ? title : (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, null)), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(MyComponents, null));
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 2.0."), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 2.1.")))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, title !== null && title !== void 0 ? title : (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, null)));
 }
 class BlockEdit extends _wordpress_element__WEBPACK_IMPORTED_MODULE_0__.Component {
   constructor(props) {
@@ -148,7 +103,7 @@ class BlockEdit extends _wordpress_element__WEBPACK_IMPORTED_MODULE_0__.Componen
   }
   runApiFetch() {
     wp.apiFetch({
-      path: 'aioc/v1/cryptoprice'
+      path: 'aioc/v1/cryptoprice/nasl/all'
     }).then(data => {
       this.setState({
         list: data,
@@ -157,9 +112,205 @@ class BlockEdit extends _wordpress_element__WEBPACK_IMPORTED_MODULE_0__.Componen
     });
   }
   render() {
-    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, this.state.loading ? (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, null) : (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "Data is ready!"));
+    const {
+      attributes,
+      setAttributes
+    } = this.props;
+    const {
+      selectedCoins
+    } = attributes;
+    let coinNames = [];
+    let coinValues = [];
+    let allCoinsData = this.state.list;
+    if (this.state.loading == false) {
+      if (allCoinsData !== null) {
+        coinNames = Object.values(allCoinsData).map(coinsList => coinsList.name);
+        // coinNames = new Map(Object.entries(this.state.list));
+        // posts.map( ( post ) => post.title.raw )
+
+        // console.log(coinNames);
+
+        coinValues = selectedCoins.map(selectedSlug => {
+          let wantedCoin = allCoinsData.find(coinsList => {
+            return coinsList.slug === selectedSlug;
+          });
+          if (wantedCoin === undefined || !wantedCoin) {
+            return false;
+          }
+          return wantedCoin.name;
+        });
+        // console.log(coinValues);
+      }
+    }
+
+    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, this.state.loading ? (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, null) : (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.FormTokenField
+    // label='Posts'
+    , {
+      placeholder: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Type Coin Name'),
+      value: coinValues,
+      suggestions: coinNames,
+      maxSuggestions: 20,
+      onChange: selectedCoins => {
+        // Build array of selected posts.
+        let selectedCoinsArray = [];
+        selectedCoins.map(coinName => {
+          const matchingCoin = allCoinsData.find(coinsList => {
+            return coinsList.name === coinName;
+          });
+          if (matchingCoin !== undefined) {
+            selectedCoinsArray.push(matchingCoin.slug);
+          }
+        });
+        setAttributes({
+          selectedCoins: selectedCoinsArray
+        });
+      }
+    })
+    // <p>Data is ready</p>
+    );
   }
 }
+
+// const { isUndefined, pickBy } = lodash;
+
+// class PostEditComponent extends Component {
+// 	constructor() {
+// 		super( ...arguments );
+// 	}
+
+// 	componentDidMount() {
+// 		this.isStillMounted = true;
+// 	}
+
+// 	componentWillUnmount() {
+// 		this.isStillMounted = false;
+// 	}
+
+// 	render() {
+// 		const { attributes, setAttributes, posts } = this.props;
+
+// 		const {
+// 			selectedPosts,
+// 		} = attributes;
+
+// 		let postNames = [];
+// 		let postsFieldValue = [];
+// 		if ( posts !== null ) {
+// 			postNames = posts.map( ( post ) => post.title.raw );
+
+// 			postsFieldValue = selectedPosts.map( ( postId ) => {
+// 				let wantedPost = posts.find( ( post ) => {
+// 					return post.id === postId;
+// 				} );
+// 				if ( wantedPost === undefined || ! wantedPost ) {
+// 					return false;
+// 				}
+// 				return wantedPost.title.raw;
+// 			} );
+// 		}
+
+// 		return(
+// 			<div>
+// 				<FormTokenField
+// 					label='Posts'
+// 					value={ postsFieldValue }
+// 					suggestions={ postNames }
+// 					maxSuggestions={ 20 }
+// 					onChange={ ( selectedPosts ) => {
+// 						// Build array of selected posts.
+// 						let selectedPostsArray = [];
+// 						selectedPosts.map(
+// 							( postName ) => {
+// 								const matchingPost = posts.find( ( post ) => {
+// 									return post.title.raw === postName;
+
+// 								} );
+// 								if ( matchingPost !== undefined ) {
+// 									selectedPostsArray.push( matchingPost.id );
+// 								}
+// 							}
+// 						)
+
+// 						setAttributes( { selectedPosts: selectedPostsArray } );
+// 					} }
+// 				/>
+// 			</div>
+// 		)
+// 	}
+// }
+
+// function MyComponent() {
+
+//     const [ error, setError ]       = useState( null );
+//     const [ mypost, setPost ]       = useState( null );
+//     const [ isLoaded, setIsLoaded ] = useState( false );
+
+// 	apiFetch( { path: 'aioc/v1/cryptoprice/nasl/all' } ).then(
+// 		( result ) => {
+// 			setIsLoaded( true );
+// 			setPost( result );
+// 		},
+// 		( error ) => {
+// 			setIsLoaded( true );
+// 			setError( error );
+// 		}
+// 	);
+
+//     if ( error ) {
+//         return <p>ERROR: { error.message }</p>;
+//     } else if ( ! isLoaded ) {
+//         return <Spinner />;
+//     } else if ( mypost ) {
+//         return <h3>Post loaded!</h3>;
+//     }
+//     return <p>No such post</p>;
+// }
+
+// function MyComponents() {
+//     const { mypost, isLoading } = useSelect( ( select ) => {
+//         const args = [ 'aioc/v1/cryptoprice/nasl/all' ];
+
+//         return {
+//             mypost: select( 'core' ).getEntityRecord( ...args ),
+//             isLoading: select( 'core/data' ).isResolving( 'core', 'getEntityRecord', args )
+//         };
+//     } );
+
+// 	console.log(mypost);
+// 	console.log(isLoading);
+
+//     if ( isLoading ) {
+//         return <p>Loading post..</p>;
+//     } else if ( mypost ) {
+//         return <h3>Post loaded!</h3>;
+//     }
+//     return <p>No such post</p>;
+// }
+
+// const coins = [
+// 	{"name":"Bitcoin","slug":"bitcoin"},
+// 	{"name":"Ethereum","slug":"ethereum"},
+// 	{"name":"Tether","slug":"tether"},
+// 	{"name":"BNB","slug":"bnb"},
+// 	{"name":"USD Coin","slug":"usd-coin"},
+// 	{"name":"XRP","slug":"xrp"},
+// 	{"name":"Binance USD","slug":"binance-usd"},
+// 	{"name":"Cardano","slug":"cardano"},
+// 	{"name":"Dogecoin","slug":"dogecoin"},
+// 	{"name":"Polygon","slug":"matic-network"}
+// ];
+
+// const MyFormTokenField = () => {
+// 	const [ selectedContinents, setSelectedCoins ] = useState( [] );
+
+// 	return (
+// 		<FormTokenField
+// 			value={ attributes.selectedCoins }
+// 			suggestions={ coins }
+// 			onChange={ ( selectedCoins ) => setSelectedCoins( selectedCoins ) }
+// 		/>
+// 	);
+// };
 
 /***/ }),
 
@@ -258,16 +409,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "@wordpress/api-fetch":
-/*!**********************************!*\
-  !*** external ["wp","apiFetch"] ***!
-  \**********************************/
-/***/ ((module) => {
-
-module.exports = window["wp"]["apiFetch"];
-
-/***/ }),
-
 /***/ "@wordpress/block-editor":
 /*!*************************************!*\
   !*** external ["wp","blockEditor"] ***!
@@ -334,7 +475,7 @@ module.exports = window["wp"]["i18n"];
   \***********************************************/
 /***/ ((module) => {
 
-module.exports = JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":2,"name":"all-in-one-crypto/aioc-price-label","version":"1.0.0","title":"Crypto Price Label","category":"all_in_one_crypto","icon":"feedback","description":"Use this to display crypto price in label format.","attributes":{"message":{"type":"string","source":"text","default":"","selector":"div"},"selectedCoins":{"type":"array","default":["bitcoin"]}},"example":{"attributes":{"message":"Example from price label!"}},"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true,"__experimentalFontFamily":true,"__experimentalFontStyle":true,"__experimentalFontWeight":true,"__experimentalLetterSpacing":true,"__experimentalTextTransform":true,"__experimentalTextDecoration":true,"__experimentalDefaultControls":{"fontSize":true,"fontAppearance":true,"textTransform":true}}},"textdomain":"aioc-price-label","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css"}');
+module.exports = JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":2,"name":"all-in-one-crypto/aioc-price-label","version":"1.0.0","title":"Crypto Price Label","category":"all_in_one_crypto","icon":"feedback","description":"Use this to display crypto price in label format.","attributes":{"message":{"type":"string","source":"text","default":"","selector":"div"},"selectedCoins":{"type":"array","default":[]}},"example":{"attributes":{"message":"Example from price label!"}},"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true,"__experimentalFontFamily":true,"__experimentalFontStyle":true,"__experimentalFontWeight":true,"__experimentalLetterSpacing":true,"__experimentalTextTransform":true,"__experimentalTextDecoration":true,"__experimentalDefaultControls":{"fontSize":true,"fontAppearance":true,"textTransform":true}}},"textdomain":"aioc-price-label","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css"}');
 
 /***/ })
 

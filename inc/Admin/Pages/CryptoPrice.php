@@ -282,6 +282,7 @@ class CryptoPrice extends BaseController
 		);
 
 		register_block_type( $this->plugin_path . 'inc/Admin/Blocks/build/price/aioc-price-chart' );
+		register_block_type( $this->plugin_path . 'inc/Admin/Blocks/build/price/aioc-price-sample' );
 
 		// wp_localize_script( 'all-in-one-crypto-aioc-price-label-editor-script', 'price_label_obj',
         //     array( 
@@ -433,12 +434,41 @@ class CryptoPrice extends BaseController
 
 			case 'all' :
 
-				$response = $this->wpdb->get_row($this->wpdb->prepare("SELECT * FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
+				if( $slug === 'all' ) {
+
+					$response = $this->wpdb->get_results( "SELECT * FROM `{$this->tablename}`" );
+					
+				} else {
+
+					$response = $this->wpdb->get_row($this->wpdb->prepare( "SELECT * FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
+
+				}
+				break;
+
+			case 'nasl' :
+
+				if( $slug === 'all' ) {
+
+					$response = $this->wpdb->get_results( "SELECT `name`, `slug` FROM `{$this->tablename}`" );
+					
+				} else {
+
+					$response = $this->wpdb->get_row($this->wpdb->prepare("SELECT `name`, `slug` FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
+
+				}
 				break;
 
 			case 'nasysl' :
 
-				$response = $this->wpdb->get_row($this->wpdb->prepare("SELECT `name`, `symbol`, `slug` FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
+				if( $slug === 'all' ) {
+
+					$response = $this->wpdb->get_results( "SELECT `name`, `symbol`, `slug` FROM `{$this->tablename}`" );
+					
+				} else {
+
+					$response = $this->wpdb->get_row($this->wpdb->prepare( "SELECT `name`, `symbol`, `slug` FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
+
+				}
 				break;
 
 			default:
