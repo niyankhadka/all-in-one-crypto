@@ -16,7 +16,7 @@
 		},
 		"selectedCoins": {
 			"type": "array",
-			"default": ["bitcoin"]
+			"default": []
 		}
 	},
 	"example": {
