@@ -282,7 +282,6 @@ class CryptoPrice extends BaseController
 		);
 
 		register_block_type( $this->plugin_path . 'inc/Admin/Blocks/build/price/aioc-price-chart' );
-		register_block_type( $this->plugin_path . 'inc/Admin/Blocks/build/price/aioc-price-sample' );
 
 		// wp_localize_script( 'all-in-one-crypto-aioc-price-label-editor-script', 'price_label_obj',
         //     array( 
