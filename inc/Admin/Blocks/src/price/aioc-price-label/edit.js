@@ -23,6 +23,8 @@ import { Component } from '@wordpress/element';
 
 import { useState } from '@wordpress/element';
 
+import { AiocPriceSettings } from './aioc-price-settings';
+
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
  * Those files can contain any CSS code that gets applied to the editor.
@@ -53,40 +55,11 @@ export default function Edit( props ) {
 	const { title } = useSelect(
 		( select ) => select( 'core' ).getSite() ?? {}
 	);
-
-	console.log(attributes.selectedCoins);
 	
 	return (
 		<div { ...useBlockProps() }>
 			<InspectorControls>
-				<PanelBody title={ __( 'General Settings' ) }>
-					<PanelBody title={ __( 'Select Coins' ) }>
-						<PanelRow>
-							<BlockEdit attributes={props.attributes} setAttributes={props.setAttributes}/>
-						</PanelRow>
-						<PanelRow>
-							This is row 1.1.
-						</PanelRow>
-					</PanelBody>
-				</PanelBody>
-				<PanelBody title={ __( 'Design Settings' ) }>
-					<PanelBody title={ __( 'Color Settings' ) }>
-						<PanelRow>
-							This is row 1.0.
-						</PanelRow>
-						<PanelRow>
-							This is row 1.1.
-						</PanelRow>
-					</PanelBody>
-					<PanelBody title={ __( 'Typography Settings' ) }>
-						<PanelRow>
-							This is row 2.0.
-						</PanelRow>
-						<PanelRow>
-							This is row 2.1.
-						</PanelRow>
-					</PanelBody>
-				</PanelBody>
+				<AiocPriceSettings attributes={props.attributes} setAttributes={props.setAttributes}/>
 			</InspectorControls>
 			
 			<span> 
