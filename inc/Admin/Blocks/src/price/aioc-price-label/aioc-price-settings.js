@@ -20,16 +20,10 @@ import { useBlockProps, RichText, InspectorControls } from '@wordpress/block-edi
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import { Component } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
+import { isEmpty } from 'lodash';
 
 import { useState } from '@wordpress/element';
-
-/**
- * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
- * Those files can contain any CSS code that gets applied to the editor.
- *
- * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
- */
- import './editor.scss';
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -45,105 +39,109 @@ import { useState } from '@wordpress/element';
  */
 export class AiocPriceSettings extends Component {
 
-	constructor(props) {
-		super(props);
+	constructor( props ) {
+		super( props );
 		this.state = {
-			list: [],
-			loading: true
-		}
+			coinsData: [],
+			coinsLoading: true
+		};
 	}
  
 	componentDidMount() {
+		this.isStillMounted = true;
 		this.runApiFetch();
 	}
  
 	runApiFetch() {
-		wp.apiFetch({
-			path: 'aioc/v1/cryptoprice/nasl/all',
-		}).then(data => {
-			this.setState({
-				list: data,
-				loading: false
-			});
-		});
+		this.fetchRequest = apiFetch( {
+			path: 'aioc/v1/cryptoprice/nasl/all' 
+		} )
+		.then( ( coinsData ) => {
+			if( this.isStillMounted ) {
+				this.setState( {
+					coinsData: isEmpty( coinsData )
+						? []
+						: coinsData,
+					coinsLoading: false
+				} );
+			}
+		} )
+		.catch( () => {
+			if ( this.isStillMounted ) {
+				this.setState( { 
+					coinsData: [],
+					coinsLoading: false
+				} );
+			}
+		} );
 	}
- 
-	render() {
 
+	componentWillUnmount() {
+		this.isStillMounted = false;
+	}
+
+	getPanelBody() {
 		const { attributes, setAttributes } = this.props;
 		const {
 			selectedCoins,
 		} = attributes;
+		const { coinsData } = this.state;
+		const { coinsLoading } = this.state;
 
-		let coinNames = [];
-		let coinValues = [];
-		let allCoinsData = this.state.list;
+		let coinNamesArray = [];
+		let coinValuesArray = [];
 
-		if( this.state.loading == false ) {
-			
-			if ( allCoinsData !== null ) {
-				
-				coinNames = Object.values(allCoinsData).map( ( coinsList ) => coinsList.name );
-				// coinNames = new Map(Object.entries(this.state.list));
-				// posts.map( ( post ) => post.title.raw )
-
-				// console.log(coinNames);
-
-				coinValues = selectedCoins.map( ( selectedSlug ) => {
-					let wantedCoin = allCoinsData.find( ( coinsList ) => {
-						return coinsList.slug === selectedSlug;
-				 	});
-
-					if ( wantedCoin === undefined || ! wantedCoin ) {
-						return false;
-					}
-					return wantedCoin.name;
+		if( coinsData !== null ) {
+			coinNamesArray = Object.values( coinsData ).map( ( coinsList ) => coinsList.name );
+			coinValuesArray = selectedCoins.map( ( selectedSlug ) => {
+				let wantedCoin = coinsData.find( ( coinsList ) => {
+					return coinsList.slug === selectedSlug;
 				});
-				// console.log(coinValues);
-			}
 
+				if ( wantedCoin === undefined || !wantedCoin ) {
+					return false;
+				}
+				return wantedCoin.name;
+			} );
 		}
 
-		
+		const onSelectCoins = ( selectedCoins ) => {
+			// Build array of selected coins.
+			let selectedCoinsArray = [];
+			selectedCoins.map(
+				( coinName ) => {
+					const matchingCoin = coinsData.find( ( coinsList ) => {
+						return coinsList.name === coinName;
+
+					} );
+					if( matchingCoin !== undefined ) {
+						selectedCoinsArray.push( matchingCoin.slug );
+					}
+				}
+			)
+			setAttributes( { selectedCoins: selectedCoinsArray } );
+		};
 
 		return(
 			<div>
                 <PanelBody title={ __( 'General Settings' ) } initialOpen={ true }>
-                    <PanelBody title={ __( 'Select Coins' ) }>
-                        <PanelRow>
-                            {this.state.loading ? (
-                                <Spinner />
-                            ) : (
-                                <FormTokenField
-                                    // label='Posts'
-                                    placeholder={ __( 'Type Coin Name' ) }
-                                    value={ coinValues }
-                                    suggestions={ coinNames }
-                                    maxSuggestions={ 20 }
-                                    onChange={ ( selectedCoins ) => {
-                                        // Build array of selected posts.
-                                        let selectedCoinsArray = [];
-                                        selectedCoins.map(
-                                            ( coinName ) => {
-                                                const matchingCoin = allCoinsData.find( ( coinsList ) => {
-                                                    return coinsList.name === coinName;
-
-                                                } );
-                                                if ( matchingCoin !== undefined ) {
-                                                    selectedCoinsArray.push( matchingCoin.slug );
-                                                }
-                                            }
-                                        )
-
-                                        setAttributes( { selectedCoins: selectedCoinsArray } );
-                                    } }
-                                />
-                            ) }
-                        </PanelRow>
-                        <PanelRow>
-                            This is row 1.1.
-                        </PanelRow>
-                    </PanelBody>
+					<PanelRow>
+						{ coinsLoading ? (
+							<Spinner />
+						) : (
+							<FormTokenField
+								label={ __( 'Select Coins' ) }
+								placeholder={ __( 'Type Coin Name' ) }
+								value={ coinValuesArray }
+								suggestions={ coinNamesArray }
+								maxSuggestions={ 20 }
+								onChange={ onSelectCoins }
+							/>
+						) }
+					</PanelRow>
+					<PanelRow>
+						This is row 1.1.
+					</PanelRow>
                 </PanelBody>
                 <PanelBody title={ __( 'Design Settings' ) } initialOpen={ false }>
                     <PanelBody title={ __( 'Color Settings' ) }>
@@ -165,6 +163,13 @@ export class AiocPriceSettings extends Component {
                 </PanelBody>
 			</div>
 		);
+	}
  
+	render() {
+
+		return(
+			this.getPanelBody()
+		);
+
 	}
 }

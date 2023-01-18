@@ -57,14 +57,15 @@ export default function Edit( props ) {
 	);
 	
 	return (
-		<div { ...useBlockProps() }>
+		<div>
 			<InspectorControls>
 				<AiocPriceSettings attributes={props.attributes} setAttributes={props.setAttributes}/>
 			</InspectorControls>
-			
-			<span> 
-				{ title ?? <Spinner /> }
-			</span>
+			<div { ...useBlockProps() }>
+				<span> 
+					{ title ?? <Spinner /> }
+				</span>
+			</div>
 		</div>
 	);
 }
@@ -77,104 +78,104 @@ export default function Edit( props ) {
 
 
 
-class BlockEdit extends Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			list: [],
-			loading: true
-		}
-	}
+// class BlockEdit extends Component {
+// 	constructor(props) {
+// 		super(props);
+// 		this.state = {
+// 			list: [],
+// 			loading: true
+// 		}
+// 	}
  
-	componentDidMount() {
-		this.runApiFetch();
-	}
+// 	componentDidMount() {
+// 		this.runApiFetch();
+// 	}
  
-	runApiFetch() {
-		wp.apiFetch({
-			path: 'aioc/v1/cryptoprice/nasl/all',
-		}).then(data => {
-			this.setState({
-				list: data,
-				loading: false
-			});
-		});
-	}
+// 	runApiFetch() {
+// 		wp.apiFetch({
+// 			path: 'aioc/v1/cryptoprice/nasl/all',
+// 		}).then(data => {
+// 			this.setState({
+// 				list: data,
+// 				loading: false
+// 			});
+// 		});
+// 	}
  
-	render() {
+// 	render() {
 
-		const { attributes, setAttributes } = this.props;
-		const {
-			selectedCoins,
-		} = attributes;
+// 		const { attributes, setAttributes } = this.props;
+// 		const {
+// 			selectedCoins,
+// 		} = attributes;
 
-		let coinNames = [];
-		let coinValues = [];
-		let allCoinsData = this.state.list;
+// 		let coinNames = [];
+// 		let coinValues = [];
+// 		let allCoinsData = this.state.list;
 
-		if( this.state.loading == false ) {
+// 		if( this.state.loading == false ) {
 			
-			if ( allCoinsData !== null ) {
+// 			if ( allCoinsData !== null ) {
 				
-				coinNames = Object.values(allCoinsData).map( ( coinsList ) => coinsList.name );
-				// coinNames = new Map(Object.entries(this.state.list));
-				// posts.map( ( post ) => post.title.raw )
+// 				coinNames = Object.values(allCoinsData).map( ( coinsList ) => coinsList.name );
+// 				// coinNames = new Map(Object.entries(this.state.list));
+// 				// posts.map( ( post ) => post.title.raw )
 
-				// console.log(coinNames);
+// 				// console.log(coinNames);
 
-				coinValues = selectedCoins.map( ( selectedSlug ) => {
-					let wantedCoin = allCoinsData.find( ( coinsList ) => {
-						return coinsList.slug === selectedSlug;
-				 	});
+// 				coinValues = selectedCoins.map( ( selectedSlug ) => {
+// 					let wantedCoin = allCoinsData.find( ( coinsList ) => {
+// 						return coinsList.slug === selectedSlug;
+// 				 	});
 
-					if ( wantedCoin === undefined || ! wantedCoin ) {
-						return false;
-					}
-					return wantedCoin.name;
-				});
-				// console.log(coinValues);
-			}
+// 					if ( wantedCoin === undefined || ! wantedCoin ) {
+// 						return false;
+// 					}
+// 					return wantedCoin.name;
+// 				});
+// 				// console.log(coinValues);
+// 			}
 
-		}
+// 		}
 
 		
 
-		return(
-			<div>
-				{this.state.loading ? (
-					<Spinner />
-				) : (
-					<FormTokenField
-						// label='Posts'
-						placeholder={ __( 'Type Coin Name' ) }
-						value={ coinValues }
-						suggestions={ coinNames }
-						maxSuggestions={ 20 }
-						onChange={ ( selectedCoins ) => {
-							// Build array of selected posts.
-							let selectedCoinsArray = [];
-							selectedCoins.map(
-								( coinName ) => {
-									const matchingCoin = allCoinsData.find( ( coinsList ) => {
-										return coinsList.name === coinName;
+// 		return(
+// 			<div>
+// 				{this.state.loading ? (
+// 					<Spinner />
+// 				) : (
+// 					<FormTokenField
+// 						// label='Posts'
+// 						placeholder={ __( 'Type Coin Name' ) }
+// 						value={ coinValues }
+// 						suggestions={ coinNames }
+// 						maxSuggestions={ 20 }
+// 						onChange={ ( selectedCoins ) => {
+// 							// Build array of selected posts.
+// 							let selectedCoinsArray = [];
+// 							selectedCoins.map(
+// 								( coinName ) => {
+// 									const matchingCoin = allCoinsData.find( ( coinsList ) => {
+// 										return coinsList.name === coinName;
 
-									} );
-									if ( matchingCoin !== undefined ) {
-										selectedCoinsArray.push( matchingCoin.slug );
-									}
-								}
-							)
+// 									} );
+// 									if ( matchingCoin !== undefined ) {
+// 										selectedCoinsArray.push( matchingCoin.slug );
+// 									}
+// 								}
+// 							)
 
-							setAttributes( { selectedCoins: selectedCoinsArray } );
-						} }
-					/>
-					// <p>Data is ready</p>
-				)}
-			</div>
-		);
+// 							setAttributes( { selectedCoins: selectedCoinsArray } );
+// 						} }
+// 					/>
+// 					// <p>Data is ready</p>
+// 				)}
+// 			</div>
+// 		);
  
-	}
-}
+// 	}
+// }
 
 
 
