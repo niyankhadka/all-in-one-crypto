@@ -22,7 +22,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_data__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./editor.scss */ "./src/price/aioc-price-label/editor.scss");
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! lodash */ "lodash");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_6__);
 
 /**
  * WordPress components that create the necessary UI elements for the block
@@ -43,12 +46,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-/**
- * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
- * Those files can contain any CSS code that gets applied to the editor.
- *
- * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
- */
 
 
 /**
@@ -67,24 +64,37 @@ class AiocPriceSettings extends _wordpress_element__WEBPACK_IMPORTED_MODULE_0__.
   constructor(props) {
     super(props);
     this.state = {
-      list: [],
-      loading: true
+      coinsData: [],
+      coinsLoading: true
     };
   }
   componentDidMount() {
+    this.isStillMounted = true;
     this.runApiFetch();
   }
   runApiFetch() {
-    wp.apiFetch({
+    this.fetchRequest = _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_5___default()({
       path: 'aioc/v1/cryptoprice/nasl/all'
-    }).then(data => {
-      this.setState({
-        list: data,
-        loading: false
-      });
+    }).then(coinsData => {
+      if (this.isStillMounted) {
+        this.setState({
+          coinsData: (0,lodash__WEBPACK_IMPORTED_MODULE_6__.isEmpty)(coinsData) ? [] : coinsData,
+          coinsLoading: false
+        });
+      }
+    }).catch(() => {
+      if (this.isStillMounted) {
+        this.setState({
+          coinsData: [],
+          coinsLoading: false
+        });
+      }
     });
   }
-  render() {
+  componentWillUnmount() {
+    this.isStillMounted = false;
+  }
+  getPanelBody() {
     const {
       attributes,
       setAttributes
@@ -92,58 +102,52 @@ class AiocPriceSettings extends _wordpress_element__WEBPACK_IMPORTED_MODULE_0__.
     const {
       selectedCoins
     } = attributes;
-    let coinNames = [];
-    let coinValues = [];
-    let allCoinsData = this.state.list;
-    if (this.state.loading == false) {
-      if (allCoinsData !== null) {
-        coinNames = Object.values(allCoinsData).map(coinsList => coinsList.name);
-        // coinNames = new Map(Object.entries(this.state.list));
-        // posts.map( ( post ) => post.title.raw )
-
-        // console.log(coinNames);
-
-        coinValues = selectedCoins.map(selectedSlug => {
-          let wantedCoin = allCoinsData.find(coinsList => {
-            return coinsList.slug === selectedSlug;
-          });
-          if (wantedCoin === undefined || !wantedCoin) {
-            return false;
-          }
-          return wantedCoin.name;
+    const {
+      coinsData
+    } = this.state;
+    const {
+      coinsLoading
+    } = this.state;
+    let coinNamesArray = [];
+    let coinValuesArray = [];
+    if (coinsData !== null) {
+      coinNamesArray = Object.values(coinsData).map(coinsList => coinsList.name);
+      coinValuesArray = selectedCoins.map(selectedSlug => {
+        let wantedCoin = coinsData.find(coinsList => {
+          return coinsList.slug === selectedSlug;
         });
-        // console.log(coinValues);
-      }
+        if (wantedCoin === undefined || !wantedCoin) {
+          return false;
+        }
+        return wantedCoin.name;
+      });
     }
-
+    const onSelectCoins = selectedCoins => {
+      // Build array of selected coins.
+      let selectedCoinsArray = [];
+      selectedCoins.map(coinName => {
+        const matchingCoin = coinsData.find(coinsList => {
+          return coinsList.name === coinName;
+        });
+        if (matchingCoin !== undefined) {
+          selectedCoinsArray.push(matchingCoin.slug);
+        }
+      });
+      setAttributes({
+        selectedCoins: selectedCoinsArray
+      });
+    };
     return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('General Settings'),
       initialOpen: true
-    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Select Coins')
-    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, this.state.loading ? (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, null) : (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.FormTokenField
-    // label='Posts'
-    , {
+    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, coinsLoading ? (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, null) : (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.FormTokenField, {
+      label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Select Coins'),
       placeholder: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Type Coin Name'),
-      value: coinValues,
-      suggestions: coinNames,
+      value: coinValuesArray,
+      suggestions: coinNamesArray,
       maxSuggestions: 20,
-      onChange: selectedCoins => {
-        // Build array of selected posts.
-        let selectedCoinsArray = [];
-        selectedCoins.map(coinName => {
-          const matchingCoin = allCoinsData.find(coinsList => {
-            return coinsList.name === coinName;
-          });
-          if (matchingCoin !== undefined) {
-            selectedCoinsArray.push(matchingCoin.slug);
-          }
-        });
-        setAttributes({
-          selectedCoins: selectedCoinsArray
-        });
-      }
-    })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 1.1."))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
+      onChange: onSelectCoins
+    })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 1.1.")), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Design Settings'),
       initialOpen: false
     }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
@@ -151,6 +155,9 @@ class AiocPriceSettings extends _wordpress_element__WEBPACK_IMPORTED_MODULE_0__.
     }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 1.0."), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 1.1.")), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Typography Settings')
     }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 2.0."), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 2.1."))));
+  }
+  render() {
+    return this.getPanelBody();
   }
 }
 
@@ -230,91 +237,108 @@ function Edit(props) {
     var _select$getSite;
     return (_select$getSite = select('core').getSite()) !== null && _select$getSite !== void 0 ? _select$getSite : {};
   });
-  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps)(), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InspectorControls, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_aioc_price_settings__WEBPACK_IMPORTED_MODULE_5__.AiocPriceSettings, {
+  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InspectorControls, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_aioc_price_settings__WEBPACK_IMPORTED_MODULE_5__.AiocPriceSettings, {
     attributes: props.attributes,
     setAttributes: props.setAttributes
-  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, title !== null && title !== void 0 ? title : (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, null)));
+  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps)(), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, title !== null && title !== void 0 ? title : (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, null))));
 }
-class BlockEdit extends _wordpress_element__WEBPACK_IMPORTED_MODULE_0__.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      list: [],
-      loading: true
-    };
-  }
-  componentDidMount() {
-    this.runApiFetch();
-  }
-  runApiFetch() {
-    wp.apiFetch({
-      path: 'aioc/v1/cryptoprice/nasl/all'
-    }).then(data => {
-      this.setState({
-        list: data,
-        loading: false
-      });
-    });
-  }
-  render() {
-    const {
-      attributes,
-      setAttributes
-    } = this.props;
-    const {
-      selectedCoins
-    } = attributes;
-    let coinNames = [];
-    let coinValues = [];
-    let allCoinsData = this.state.list;
-    if (this.state.loading == false) {
-      if (allCoinsData !== null) {
-        coinNames = Object.values(allCoinsData).map(coinsList => coinsList.name);
-        // coinNames = new Map(Object.entries(this.state.list));
-        // posts.map( ( post ) => post.title.raw )
 
-        // console.log(coinNames);
+// class BlockEdit extends Component {
+// 	constructor(props) {
+// 		super(props);
+// 		this.state = {
+// 			list: [],
+// 			loading: true
+// 		}
+// 	}
 
-        coinValues = selectedCoins.map(selectedSlug => {
-          let wantedCoin = allCoinsData.find(coinsList => {
-            return coinsList.slug === selectedSlug;
-          });
-          if (wantedCoin === undefined || !wantedCoin) {
-            return false;
-          }
-          return wantedCoin.name;
-        });
-        // console.log(coinValues);
-      }
-    }
+// 	componentDidMount() {
+// 		this.runApiFetch();
+// 	}
 
-    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, this.state.loading ? (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, null) : (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.FormTokenField
-    // label='Posts'
-    , {
-      placeholder: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Type Coin Name'),
-      value: coinValues,
-      suggestions: coinNames,
-      maxSuggestions: 20,
-      onChange: selectedCoins => {
-        // Build array of selected posts.
-        let selectedCoinsArray = [];
-        selectedCoins.map(coinName => {
-          const matchingCoin = allCoinsData.find(coinsList => {
-            return coinsList.name === coinName;
-          });
-          if (matchingCoin !== undefined) {
-            selectedCoinsArray.push(matchingCoin.slug);
-          }
-        });
-        setAttributes({
-          selectedCoins: selectedCoinsArray
-        });
-      }
-    })
-    // <p>Data is ready</p>
-    );
-  }
-}
+// 	runApiFetch() {
+// 		wp.apiFetch({
+// 			path: 'aioc/v1/cryptoprice/nasl/all',
+// 		}).then(data => {
+// 			this.setState({
+// 				list: data,
+// 				loading: false
+// 			});
+// 		});
+// 	}
+
+// 	render() {
+
+// 		const { attributes, setAttributes } = this.props;
+// 		const {
+// 			selectedCoins,
+// 		} = attributes;
+
+// 		let coinNames = [];
+// 		let coinValues = [];
+// 		let allCoinsData = this.state.list;
+
+// 		if( this.state.loading == false ) {
+
+// 			if ( allCoinsData !== null ) {
+
+// 				coinNames = Object.values(allCoinsData).map( ( coinsList ) => coinsList.name );
+// 				// coinNames = new Map(Object.entries(this.state.list));
+// 				// posts.map( ( post ) => post.title.raw )
+
+// 				// console.log(coinNames);
+
+// 				coinValues = selectedCoins.map( ( selectedSlug ) => {
+// 					let wantedCoin = allCoinsData.find( ( coinsList ) => {
+// 						return coinsList.slug === selectedSlug;
+// 				 	});
+
+// 					if ( wantedCoin === undefined || ! wantedCoin ) {
+// 						return false;
+// 					}
+// 					return wantedCoin.name;
+// 				});
+// 				// console.log(coinValues);
+// 			}
+
+// 		}
+
+// 		return(
+// 			<div>
+// 				{this.state.loading ? (
+// 					<Spinner />
+// 				) : (
+// 					<FormTokenField
+// 						// label='Posts'
+// 						placeholder={ __( 'Type Coin Name' ) }
+// 						value={ coinValues }
+// 						suggestions={ coinNames }
+// 						maxSuggestions={ 20 }
+// 						onChange={ ( selectedCoins ) => {
+// 							// Build array of selected posts.
+// 							let selectedCoinsArray = [];
+// 							selectedCoins.map(
+// 								( coinName ) => {
+// 									const matchingCoin = allCoinsData.find( ( coinsList ) => {
+// 										return coinsList.name === coinName;
+
+// 									} );
+// 									if ( matchingCoin !== undefined ) {
+// 										selectedCoinsArray.push( matchingCoin.slug );
+// 									}
+// 								}
+// 							)
+
+// 							setAttributes( { selectedCoins: selectedCoinsArray } );
+// 						} }
+// 					/>
+// 					// <p>Data is ready</p>
+// 				)}
+// 			</div>
+// 		);
+
+// 	}
+// }
 
 // const { isUndefined, pickBy } = lodash;
 
@@ -551,6 +575,26 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 // extracted by mini-css-extract-plugin
 
+
+/***/ }),
+
+/***/ "lodash":
+/*!*************************!*\
+  !*** external "lodash" ***!
+  \*************************/
+/***/ ((module) => {
+
+module.exports = window["lodash"];
+
+/***/ }),
+
+/***/ "@wordpress/api-fetch":
+/*!**********************************!*\
+  !*** external ["wp","apiFetch"] ***!
+  \**********************************/
+/***/ ((module) => {
+
+module.exports = window["wp"]["apiFetch"];
 
 /***/ }),
 
