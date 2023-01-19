@@ -16,14 +16,10 @@ import {
  *
  * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useblockprops
  */
-import { useBlockProps, RichText, InspectorControls } from '@wordpress/block-editor';
-import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import { Component } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { isEmpty } from 'lodash';
-
-import { useState } from '@wordpress/element';
 
 /**
  * The edit function describes the structure of your block in the context of the

@@ -7,7 +7,8 @@ import {
 	PanelBody,
 	PanelRow,
 	Spinner,
-	FormTokenField
+	FormTokenField,
+	Placeholder
  } from '@wordpress/components';
 
 /**
@@ -52,19 +53,77 @@ export default function Edit( props ) {
 		setAttributes
 	} = props;
 
+	const {
+		selectedCoins,
+	} = attributes;
+
 	const { title } = useSelect(
 		( select ) => select( 'core' ).getSite() ?? {}
 	);
+
+	const hasSelectedCoins = !! selectedCoins?.length;
+	const inspectorControls = (
+		<InspectorControls>
+			<AiocPriceSettings attributes={props.attributes} setAttributes={props.setAttributes}/>
+		</InspectorControls>
+	);
+
+	const blockProps = useBlockProps( {
+		className: {
+			'is-grid': 'grid',
+			'has-price': 'price' 
+		}
+	} );
+
+	if ( ! hasSelectedCoins ) {
+		return (
+			<div { ...blockProps }>
+				{ inspectorControls }
+				<Placeholder label={ __( 'Crypto Price Label' ) }>
+					{ ! Array.isArray( selectedCoins ) ? (
+						<Spinner />
+					) : (
+						__( 'Please Select at least one coin.' )
+					) }
+				</Placeholder>
+			</div>
+		);
+	}
 	
 	return (
 		<div>
-			<InspectorControls>
-				<AiocPriceSettings attributes={props.attributes} setAttributes={props.setAttributes}/>
-			</InspectorControls>
-			<div { ...useBlockProps() }>
-				<span> 
-					{ title ?? <Spinner /> }
-				</span>
+			{ inspectorControls }
+			<div { ...blockProps } data-realtime="on">
+				<div class="aioc-price-label-container">
+					<div class="aioc-price-label-head">
+						<img alt="bitcoin" src="https://assets.coingecko.com/coins/images/1/thumb/bitcoin.png" />
+						<p class="aioc-price-label-coin-details">
+							<span class="coin-name">Bitcoin</span> 
+							<span class="coin-symbol">(BTC)</span>
+						</p>
+					</div>
+					<div class="aioc-price-label-body">
+						<p class="aioc-price-label-price-details" data-price="16724.32" data-live-price="bitcoin" data-rate="1.000268" data-currency="USD" data-timeout="1671302707901">
+							<span class="fiat-symbol">$</span> 
+							<span class="fiat-price">16,728.80</span>
+						</p>
+					</div>
+				</div>
+				<div class="aioc-price-label-container">
+					<div class="aioc-price-label-head">
+						<img alt="bitcoin" src="https://assets.coingecko.com/coins/images/1/thumb/bitcoin.png" />
+						<p class="aioc-price-label-coin-details">
+							<span class="coin-name">Bitcoin</span> 
+							<span class="coin-symbol">(BTC)</span>
+						</p>
+					</div>
+					<div class="aioc-price-label-body">
+						<p class="aioc-price-label-price-details" data-price="16724.32" data-live-price="bitcoin" data-rate="1.000268" data-currency="USD" data-timeout="1671302707901">
+							<span class="fiat-symbol">$</span> 
+							<span class="fiat-price">16,728.80</span>
+						</p>
+					</div>
+				</div>
 			</div>
 		</div>
 	);
