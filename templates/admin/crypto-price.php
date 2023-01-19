@@ -87,4 +87,26 @@ function ccpwp_get_allCoins(){
     }
 
 }
-ccpwp_get_allCoins();
+
+function get_currencies() {
+
+    $request = wp_remote_get('https://api.blocksera.com/v1/exrates');
+
+    if (is_wp_error($request) || wp_remote_retrieve_response_code($request) != 200) {
+        return false;
+    }
+
+    $body = wp_remote_retrieve_body($request);
+    $exrates = apply_filters('block_exrates', json_decode($body));
+
+    $response = json_decode($body);
+
+    debug( $response );
+
+    if (!empty($exrates)) {
+        set_transient('mcw-currencies', $exrates, DAY_IN_SECONDS);
+    }
+
+    return $exrates;
+}
+get_currencies();

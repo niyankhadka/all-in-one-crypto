@@ -7,9 +7,37 @@
  * Replace them with your own styles or remove the file completely.
  */
 .wp-block-all-in-one-crypto-aioc-price-label {
-  background-color: #78219b;
-  color: #fff;
-  padding: 2px;
+  background: #fafafa;
+}
+
+.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-container {
+  background: #fafafa;
+  border: 1px solid #c8d0d3;
+  border-radius: 99px;
+  cursor: pointer;
+  padding: 0px 15px;
+  text-align: center;
+  margin: 5px 0px;
+}
+
+.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-container .aioc-price-label-head {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-container .aioc-price-label-head img {
+  display: inline-block;
+  height: 20px;
+  margin-bottom: -4px;
+  margin-right: 5px;
+}
+
+.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-container .aioc-price-label-head p {
+  display: inline-block;
+}
+
+.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-container .aioc-price-label-body {
+  display: inline-block;
 }
 
 /*# sourceMappingURL=index.css.map*/
