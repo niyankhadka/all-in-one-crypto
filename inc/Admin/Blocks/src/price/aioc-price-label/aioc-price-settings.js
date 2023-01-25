@@ -50,7 +50,7 @@ export class AiocPriceSettings extends Component {
  
 	runApiFetch() {
 		this.fetchRequest = apiFetch( {
-			path: 'aioc/v1/cryptoprice/nasl/all' 
+			path: 'aioc/v1/cryptoprice/query=nasl/slug=all' 
 		} )
 		.then( ( coinsData ) => {
 			if( this.isStillMounted ) {

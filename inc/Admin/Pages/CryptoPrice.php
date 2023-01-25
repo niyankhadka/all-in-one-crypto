@@ -312,10 +312,30 @@ class CryptoPrice extends BaseController
 	 */
 	public function registerPriceRestApi() {
 
-		register_rest_route( 'aioc/v1', '/cryptoprice/(?P<query>[a-z]+)/(?P<slug>[a-z]+)', [
+		// (?P<query>[a-z]+)/slug=(?P<slug>(?=\S*[-,])([a-z-,]+)|[a-z]+) latest
+		// (?P<query>[a-z]+)/(?P<slug>[a-zA-Z]+(\,[a-zA-Z]+)+|[a-z]+) old
+		register_rest_route( 'aioc/v1', "/cryptoprice/query=(?P<query>[a-z]+)/slug=(?P<slug>(?=\S*[-,])([a-z0-9-,]+)|[a-z0-9]+)", [
 			'method' => 'GET',
 			'callback' => [ $this, 'restRouteCryptoPrice' ],
-			'permission_callback' => '__return_true'
+			'permission_callback' => '__return_true',
+			'args' => [
+				'query' => array(
+					'sanitize_callback' => function( $param, $request, $key ) {
+						return sanitize_text_field( $param );
+					},
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					}
+				),
+				'slug' => array(
+					'sanitize_callback' => function( $param, $request, $key ) {
+						return sanitize_text_field( $param );
+					},
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					}
+				)
+			],
 		]);
 
 	}
@@ -325,13 +345,15 @@ class CryptoPrice extends BaseController
      * 
 	 * @since    1.0.0
 	 */
-	public function restRouteCryptoPrice( $data ) {
+	public function restRouteCryptoPrice( $request  ) {
 
-		if( !empty( $data ) ) {
+		$request = $request -> get_url_params();
+
+		if( !empty( $request  ) ) {
 
 			$this->fetchCryptoPrices();
 
-			$response = $this->queryCryptoPrices( $data['query'], $data['slug'] );
+			$response = $this->queryCryptoPrices( $request ['query'], $request ['slug'] );
 
 			if( empty( $response ) || ! $response ) {
 
@@ -439,7 +461,8 @@ class CryptoPrice extends BaseController
 					
 				} else {
 
-					$response = $this->wpdb->get_row($this->wpdb->prepare( "SELECT * FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
+					// $response = $this->wpdb->get_row($this->wpdb->prepare( "SELECT * FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
+					$response = $this->wpdb->get_results( "SELECT * FROM `{$this->tablename}` WHERE `slug` IN ('" . str_replace(",", "','", $slug ) . "')" );
 
 				}
 				break;
@@ -452,7 +475,7 @@ class CryptoPrice extends BaseController
 					
 				} else {
 
-					$response = $this->wpdb->get_row($this->wpdb->prepare("SELECT `name`, `slug` FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
+					$response = $this->wpdb->get_results( "SELECT `name`, `slug` FROM `{$this->tablename}` WHERE `slug` IN ('" . str_replace(",", "','", $slug ) . "')" );
 
 				}
 				break;
@@ -465,7 +488,8 @@ class CryptoPrice extends BaseController
 					
 				} else {
 
-					$response = $this->wpdb->get_row($this->wpdb->prepare( "SELECT `name`, `symbol`, `slug` FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
+					// $response = $this->wpdb->get_row($this->wpdb->prepare( "SELECT `name`, `symbol`, `slug` FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
+					$response = $this->wpdb->get_results( "SELECT `name`, `symbol`, `slug` FROM `{$this->tablename}` WHERE `slug` IN ('" . str_replace(",", "','", $slug ) . "')" );
 
 				}
 				break;
