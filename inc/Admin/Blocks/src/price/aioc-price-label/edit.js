@@ -22,9 +22,11 @@ import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import { Component } from '@wordpress/element';
 
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 
 import { AiocPriceSettings } from './aioc-price-settings';
+import { AiocPriceQuery } from './aioc-price-query';
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -75,12 +77,35 @@ export default function Edit( props ) {
 		}
 	} );
 
+    const [ selectedQuery, setSelectedQuery ] = useState([]);
+    const apirequest = async () => {
+		if ( hasSelectedCoins ) {
+			const url = 'aioc/v1/cryptoprice/query=all/slug=' + selectedCoins.toString();
+			await apiFetch( {
+				path: url
+			} )
+			.then( ( coinsData ) => {
+				coinsData == null 
+					? setSelectedQuery([])
+					: setSelectedQuery(coinsData);
+			} )
+			.catch( () => {
+				setSelectedQuery([]);
+			} );
+		} else {
+			setSelectedQuery([]);
+		}
+    };
+    useEffect(() => {
+		apirequest();
+    }, [selectedCoins]);
+
 	if ( ! hasSelectedCoins ) {
 		return (
 			<div { ...blockProps }>
 				{ inspectorControls }
 				<Placeholder label={ __( 'Crypto Price Label' ) }>
-					{ ! Array.isArray( selectedCoins ) ? (
+					{ ! Array.isArray( selectedQuery ) ? (
 						<Spinner />
 					) : (
 						__( 'Please Select at least one coin.' )
@@ -89,41 +114,46 @@ export default function Edit( props ) {
 			</div>
 		);
 	}
+
+	const dispalySelected = !! selectedQuery?.length;
+	if ( ! dispalySelected ) {
+		return (
+			<div { ...blockProps }>
+				{ inspectorControls }
+				<Placeholder label={ __( 'Crypto Price Label' ) }>
+					<Spinner />
+				</Placeholder>
+			</div>
+		);
+	}
 	
 	return (
 		<div>
 			{ inspectorControls }
+			{/* <AiocPriceQuery query={selectedCoins}/> */}
 			<div { ...blockProps } data-realtime="on">
-				<div class="aioc-price-label-container">
-					<div class="aioc-price-label-head">
-						<img alt="bitcoin" src="https://assets.coingecko.com/coins/images/1/thumb/bitcoin.png" />
-						<p class="aioc-price-label-coin-details">
-							<span class="coin-name">Bitcoin</span> 
-							<span class="coin-symbol">(BTC)</span>
-						</p>
-					</div>
-					<div class="aioc-price-label-body">
-						<p class="aioc-price-label-price-details" data-price="16724.32" data-live-price="bitcoin" data-rate="1.000268" data-currency="USD" data-timeout="1671302707901">
-							<span class="fiat-symbol">$</span> 
-							<span class="fiat-price">16,728.80</span>
-						</p>
-					</div>
-				</div>
-				<div class="aioc-price-label-container">
-					<div class="aioc-price-label-head">
-						<img alt="bitcoin" src="https://assets.coingecko.com/coins/images/1/thumb/bitcoin.png" />
-						<p class="aioc-price-label-coin-details">
-							<span class="coin-name">Bitcoin</span> 
-							<span class="coin-symbol">(BTC)</span>
-						</p>
-					</div>
-					<div class="aioc-price-label-body">
-						<p class="aioc-price-label-price-details" data-price="16724.32" data-live-price="bitcoin" data-rate="1.000268" data-currency="USD" data-timeout="1671302707901">
-							<span class="fiat-symbol">$</span> 
-							<span class="fiat-price">16,728.80</span>
-						</p>
-					</div>
-				</div>
+
+				
+				{ selectedQuery.map( ( selectedCoin ) => {
+					let priceFormat = new Intl.NumberFormat('en-US').format(selectedCoin.price_usd);					
+					return(
+						<div class="aioc-price-label-container">
+							<div class="aioc-price-label-head">
+								<img alt="bitcoin" src={selectedCoin.img} />
+								<p class="aioc-price-label-coin-details">
+									<span class="coin-name">{selectedCoin.name}</span> 
+									<span class="coin-symbol">({selectedCoin.symbol})</span>
+								</p>
+							</div>
+							<div class="aioc-price-label-body">
+								<p class="aioc-price-label-price-details" data-price="16724.32" data-live-price="bitcoin" data-rate="1.000268" data-currency="USD" data-timeout="1671302707901">
+									<span class="fiat-symbol">$</span> 
+									<span class="fiat-price">{priceFormat}</span>
+								</p>
+							</div>
+						</div>
+					);
+				} ) }
 			</div>
 		</div>
 	);
