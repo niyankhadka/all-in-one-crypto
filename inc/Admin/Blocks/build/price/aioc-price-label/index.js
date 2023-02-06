@@ -202,14 +202,17 @@ class AiocPriceSettings extends _wordpress_element__WEBPACK_IMPORTED_MODULE_0__.
     super(props);
     this.state = {
       coinsData: [],
-      coinsLoading: true
+      coinsLoading: true,
+      ratesData: [],
+      ratesLoading: true
     };
   }
   componentDidMount() {
     this.isStillMounted = true;
-    this.runApiFetch();
+    this.runApiCoinPriceFetch();
+    this.runApiFiatRateFetch();
   }
-  runApiFetch() {
+  runApiCoinPriceFetch() {
     this.fetchRequest = _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_3___default()({
       path: 'aioc/v1/cryptoprice/query=nasl/slug=all'
     }).then(coinsData => {
@@ -228,16 +231,37 @@ class AiocPriceSettings extends _wordpress_element__WEBPACK_IMPORTED_MODULE_0__.
       }
     });
   }
+  runApiFiatRateFetch() {
+    this.fetchRequest = _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_3___default()({
+      path: 'aioc/v1/fiatrate/currency=all'
+    }).then(ratesData => {
+      if (this.isStillMounted) {
+        this.setState({
+          ratesData: (0,lodash__WEBPACK_IMPORTED_MODULE_4__.isEmpty)(ratesData) ? [] : ratesData,
+          ratesLoading: false
+        });
+      }
+    }).catch(() => {
+      if (this.isStillMounted) {
+        this.setState({
+          ratesData: [],
+          ratesLoading: false
+        });
+      }
+    });
+  }
   componentWillUnmount() {
     this.isStillMounted = false;
   }
-  getPanelBody() {
+  render() {
     const {
       attributes,
       setAttributes
     } = this.props;
     const {
-      selectedCoins
+      selectedCoins,
+      selectedCurrencies,
+      className
     } = attributes;
     const {
       coinsData
@@ -274,7 +298,65 @@ class AiocPriceSettings extends _wordpress_element__WEBPACK_IMPORTED_MODULE_0__.
         selectedCoins: selectedCoinsArray
       });
     };
-    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
+    const {
+      ratesData
+    } = this.state;
+    const {
+      ratesLoading
+    } = this.state;
+    let ratesDataArray = [];
+    let rateNamesArray = [];
+    let rateValuesArray = [];
+    if (ratesData !== null) {
+      ratesDataArray = Object.entries(ratesData);
+      rateNamesArray = ratesDataArray.map(ratesList => ratesList[0]);
+      rateValuesArray = selectedCurrencies.map(selectedCurrency => {
+        let wantedRate = ratesDataArray.find(ratesList => {
+          return ratesList[0] === selectedCurrency;
+        });
+        if (wantedRate === undefined || !wantedRate) {
+          return false;
+        }
+        return wantedRate[0];
+      });
+    }
+    const onSelectRates = selectedCurrencies => {
+      let selectedRatesArray = [];
+      selectedCurrencies.map(rateName => {
+        const matchingRate = ratesDataArray.find(ratesList => {
+          return ratesList[0] === rateName;
+        });
+        if (matchingRate !== undefined) {
+          selectedRatesArray.push(matchingRate[0]);
+        }
+      });
+      setAttributes({
+        selectedCurrencies: selectedRatesArray
+      });
+    };
+
+    // const onSelectCurrency = ( selectedCurrency ) => {
+    // 	setAttributes( { selectedCurrency: selectedCurrency } );
+    // };
+
+    // const MySelectControl = () => {
+
+    // 	return (
+    // 		<SelectControl
+    // 			label="Size"
+    // 			value={ selectedCurrency }
+    // 			options={ [
+    // 				{ label: 'Big', value: '100%' },
+    // 				{ label: 'Medium', value: '50%' },
+    // 				{ label: 'Small', value: '25%' },
+    // 			] }
+    // 			onChange={ onSelectCurrency }
+    // 			__nextHasNoMarginBottom
+    // 		/>
+    // 	);
+    // };
+
+    const panelBody = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('General Settings'),
       initialOpen: true
     }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, coinsLoading ? (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, null) : (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.FormTokenField, {
@@ -284,17 +366,15 @@ class AiocPriceSettings extends _wordpress_element__WEBPACK_IMPORTED_MODULE_0__.
       suggestions: coinNamesArray,
       maxSuggestions: 20,
       onChange: onSelectCoins
-    })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 1.1.")), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Design Settings'),
-      initialOpen: false
-    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Color Settings')
-    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 1.0."), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 1.1.")), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Typography Settings')
-    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 2.0."), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 2.1."))));
-  }
-  render() {
-    return this.getPanelBody();
+    })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, ratesLoading ? (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, null) : (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.FormTokenField, {
+      label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Select Currency'),
+      placeholder: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Type Currency'),
+      value: rateValuesArray,
+      suggestions: rateNamesArray,
+      maxSuggestions: 20,
+      onChange: onSelectRates
+    })), className === 'is-style-fill' && (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 1.1.0"), className === 'is-style-outline' && (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, null, "This is row 1.1.1"));
+    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, panelBody);
   }
 }
 
@@ -376,49 +456,64 @@ function Edit(props) {
     setAttributes
   } = props;
   const {
-    selectedCoins
+    selectedCoins,
+    selectedCurrencies,
+    className
   } = attributes;
-  const {
-    title
-  } = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_4__.useSelect)(select => {
-    var _select$getSite;
-    return (_select$getSite = select('core').getSite()) !== null && _select$getSite !== void 0 ? _select$getSite : {};
-  });
   const hasSelectedCoins = !!selectedCoins?.length;
+  const hasSelectedRates = !!selectedCurrencies?.length;
   const inspectorControls = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_3__.InspectorControls, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)(_aioc_price_settings__WEBPACK_IMPORTED_MODULE_7__.AiocPriceSettings, {
     attributes: props.attributes,
     setAttributes: props.setAttributes
   }));
-  const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_3__.useBlockProps)({
-    className: {
-      'is-grid': 'grid',
-      'has-price': 'price'
-    }
-  });
-  const [selectedQuery, setSelectedQuery] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)([]);
-  const apirequest = async () => {
+  const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_3__.useBlockProps)();
+  // const blockProps = useBlockProps( {
+  // 	className: {
+  // 		'is-grid': 'grid',
+  // 		'has-price': 'price' 
+  // 	}
+  // } );
+
+  const [selectedPriceQuery, setSelectedPriceQuery] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)([]);
+  const apiPriceRequest = async () => {
     if (hasSelectedCoins) {
       const url = 'aioc/v1/cryptoprice/query=all/slug=' + selectedCoins.toString();
       await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_6___default()({
         path: url
       }).then(coinsData => {
-        coinsData == null ? setSelectedQuery([]) : setSelectedQuery(coinsData);
+        coinsData == null ? setSelectedPriceQuery([]) : setSelectedPriceQuery(coinsData);
       }).catch(() => {
-        setSelectedQuery([]);
+        setSelectedPriceQuery([]);
       });
     } else {
-      setSelectedQuery([]);
+      setSelectedPriceQuery([]);
+    }
+  };
+  const [selectedRateQuery, setSelectedRateQuery] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)([]);
+  const apiRateRequest = async () => {
+    if (hasSelectedCoins && hasSelectedRates) {
+      const url = 'aioc/v1/fiatrate/currency=' + selectedCurrencies.toString();
+      await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_6___default()({
+        path: url
+      }).then(ratesData => {
+        ratesData == null ? setSelectedRateQuery([]) : setSelectedRateQuery(Object.entries(ratesData));
+      }).catch(() => {
+        setSelectedRateQuery([]);
+      });
+    } else {
+      setSelectedRateQuery([]);
     }
   };
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
-    apirequest();
-  }, [selectedCoins]);
+    apiPriceRequest();
+    apiRateRequest();
+  }, [selectedCoins, selectedCurrencies]);
   if (!hasSelectedCoins) {
     return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("div", blockProps, inspectorControls, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Placeholder, {
       label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Crypto Price Label')
-    }, !Array.isArray(selectedQuery) ? (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Spinner, null) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Please Select at least one coin.')));
+    }, !Array.isArray(selectedPriceQuery) ? (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Spinner, null) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Please Select at least one coin.')));
   }
-  const dispalySelected = !!selectedQuery?.length;
+  const dispalySelected = !!selectedPriceQuery?.length;
   if (!dispalySelected) {
     return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("div", blockProps, inspectorControls, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Placeholder, {
       label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Crypto Price Label')
@@ -426,35 +521,43 @@ function Edit(props) {
   }
   return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("div", null, inspectorControls, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("div", (0,_babel_runtime_helpers_extends__WEBPACK_IMPORTED_MODULE_0__["default"])({}, blockProps, {
     "data-realtime": "on"
-  }), selectedQuery.map(selectedCoin => {
-    let priceFormat = new Intl.NumberFormat('en-US').format(selectedCoin.price_usd);
-    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("div", {
-      class: "aioc-price-label-container"
-    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("div", {
-      class: "aioc-price-label-head"
-    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("img", {
-      alt: "bitcoin",
-      src: selectedCoin.img
-    }), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("p", {
-      class: "aioc-price-label-coin-details"
-    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("span", {
-      class: "coin-name"
-    }, selectedCoin.name), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("span", {
-      class: "coin-symbol"
-    }, "(", selectedCoin.symbol, ")"))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("div", {
-      class: "aioc-price-label-body"
-    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("p", {
-      class: "aioc-price-label-price-details",
-      "data-price": "16724.32",
-      "data-live-price": "bitcoin",
-      "data-rate": "1.000268",
-      "data-currency": "USD",
-      "data-timeout": "1671302707901"
-    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("span", {
-      class: "fiat-symbol"
-    }, "$"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("span", {
-      class: "fiat-price"
-    }, priceFormat))));
+  }), selectedPriceQuery.map(selectedCoin => {
+    if (className === 'is-style-label-box' || className === undefined) {
+      return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("div", {
+        class: "aioc-price-label-style-box"
+      }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("div", {
+        class: "aioc-price-label-head"
+      }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("img", {
+        alt: "bitcoin",
+        src: selectedCoin.img
+      }), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("p", {
+        class: "aioc-price-label-coin-details"
+      }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("span", {
+        class: "coin-name"
+      }, selectedCoin.name), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("span", {
+        class: "coin-symbol"
+      }, "(", selectedCoin.symbol, ")"))), selectedRateQuery.map(selectedRate => {
+        if (selectedRate && selectedRate != null) {
+          let rateSymbol = selectedRate[0];
+          let ratePrice = selectedRate[1] * Number(selectedCoin.price_usd);
+          let ratePriceFormat = new Intl.NumberFormat('en-US').format(ratePrice);
+          return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("div", {
+            class: "aioc-price-label-body"
+          }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("p", {
+            class: "aioc-price-label-price-details",
+            "data-price": ratePrice,
+            "data-live-price": selectedCoin.slug,
+            "data-rate": selectedRate[1],
+            "data-currency": rateSymbol,
+            "data-timeout": "1671302707901"
+          }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("span", {
+            class: "fiat-symbol"
+          }, rateSymbol, " "), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("span", {
+            class: "fiat-price"
+          }, ratePriceFormat)));
+        }
+      }));
+    }
   })));
 }
 
@@ -907,7 +1010,7 @@ function _extends() {
   \***********************************************/
 /***/ ((module) => {
 
-module.exports = JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":2,"name":"all-in-one-crypto/aioc-price-label","version":"1.0.0","title":"Crypto Price Label","category":"all_in_one_crypto","icon":"feedback","description":"Use this to display crypto price in label format.","attributes":{"message":{"type":"string","source":"text","default":"","selector":"div"},"selectedCoins":{"type":"array","default":[]}},"example":{"attributes":{"message":"Example from price label!"}},"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true,"__experimentalFontFamily":true,"__experimentalFontStyle":true,"__experimentalFontWeight":true,"__experimentalLetterSpacing":true,"__experimentalTextTransform":true,"__experimentalTextDecoration":true,"__experimentalDefaultControls":{"fontSize":true,"fontAppearance":true,"textTransform":true}}},"textdomain":"aioc-price-label","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css"}');
+module.exports = JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":2,"name":"all-in-one-crypto/aioc-price-label","version":"1.0.0","title":"Crypto Price Label","category":"all_in_one_crypto","icon":"feedback","description":"Use this to display crypto price in label format.","attributes":{"message":{"type":"string","source":"text","default":"","selector":"div"},"selectedCoins":{"type":"array","default":[]},"selectedCurrencies":{"type":"array","default":["USD"]}},"example":{"attributes":{"message":"Example from price label!"}},"supports":{"html":false,"typography":{"fontSize":true,"lineHeight":true,"__experimentalFontFamily":true,"__experimentalFontStyle":true,"__experimentalFontWeight":true,"__experimentalLetterSpacing":true,"__experimentalTextTransform":true,"__experimentalTextDecoration":true,"__experimentalDefaultControls":{"fontSize":true,"fontAppearance":true,"textTransform":true}}},"styles":[{"name":"label-box","label":"Box","isDefault":true},{"name":"label-content","label":"Content"}],"textdomain":"aioc-price-label","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css"}');
 
 /***/ })
 

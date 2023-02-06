@@ -57,28 +57,28 @@ export default function Edit( props ) {
 
 	const {
 		selectedCoins,
+		selectedCurrencies,
+		className
 	} = attributes;
 
-	const { title } = useSelect(
-		( select ) => select( 'core' ).getSite() ?? {}
-	);
-
 	const hasSelectedCoins = !! selectedCoins?.length;
+	const hasSelectedRates = !! selectedCurrencies?.length;
 	const inspectorControls = (
 		<InspectorControls>
 			<AiocPriceSettings attributes={props.attributes} setAttributes={props.setAttributes}/>
 		</InspectorControls>
 	);
 
-	const blockProps = useBlockProps( {
-		className: {
-			'is-grid': 'grid',
-			'has-price': 'price' 
-		}
-	} );
+	const blockProps = useBlockProps();
+	// const blockProps = useBlockProps( {
+	// 	className: {
+	// 		'is-grid': 'grid',
+	// 		'has-price': 'price' 
+	// 	}
+	// } );
 
-    const [ selectedQuery, setSelectedQuery ] = useState([]);
-    const apirequest = async () => {
+    const [ selectedPriceQuery, setSelectedPriceQuery ] = useState([]);
+    const apiPriceRequest = async () => {
 		if ( hasSelectedCoins ) {
 			const url = 'aioc/v1/cryptoprice/query=all/slug=' + selectedCoins.toString();
 			await apiFetch( {
@@ -86,26 +86,52 @@ export default function Edit( props ) {
 			} )
 			.then( ( coinsData ) => {
 				coinsData == null 
-					? setSelectedQuery([])
-					: setSelectedQuery(coinsData);
+					? setSelectedPriceQuery([])
+					: setSelectedPriceQuery(coinsData);
 			} )
 			.catch( () => {
-				setSelectedQuery([]);
+				setSelectedPriceQuery([]);
 			} );
 		} else {
-			setSelectedQuery([]);
+			setSelectedPriceQuery([]);
 		}
     };
-    useEffect(() => {
-		apirequest();
-    }, [selectedCoins]);
+
+	const [ selectedRateQuery, setSelectedRateQuery ] = useState([]);
+    const apiRateRequest = async () => {
+		if ( hasSelectedCoins && hasSelectedRates ) {
+			const url = 'aioc/v1/fiatrate/currency=' + selectedCurrencies.toString();
+			await apiFetch( {
+				path: url
+			} )
+			.then( ( ratesData ) => {
+				ratesData == null 
+					? setSelectedRateQuery([])
+					: setSelectedRateQuery(Object.entries( ratesData ));
+			} )
+			.catch( () => {
+				setSelectedRateQuery([]);
+			} );
+		} else {
+			setSelectedRateQuery([]);
+		}
+    };
+
+    useEffect( () => {
+		apiPriceRequest();
+		apiRateRequest();
+    }, 
+	[
+		selectedCoins,
+		selectedCurrencies
+	] );
 
 	if ( ! hasSelectedCoins ) {
 		return (
 			<div { ...blockProps }>
 				{ inspectorControls }
 				<Placeholder label={ __( 'Crypto Price Label' ) }>
-					{ ! Array.isArray( selectedQuery ) ? (
+					{ ! Array.isArray( selectedPriceQuery ) ? (
 						<Spinner />
 					) : (
 						__( 'Please Select at least one coin.' )
@@ -115,7 +141,7 @@ export default function Edit( props ) {
 		);
 	}
 
-	const dispalySelected = !! selectedQuery?.length;
+	const dispalySelected = !! selectedPriceQuery?.length;
 	if ( ! dispalySelected ) {
 		return (
 			<div { ...blockProps }>
@@ -132,27 +158,35 @@ export default function Edit( props ) {
 			{ inspectorControls }
 			{/* <AiocPriceQuery query={selectedCoins}/> */}
 			<div { ...blockProps } data-realtime="on">
-
-				
-				{ selectedQuery.map( ( selectedCoin ) => {
-					let priceFormat = new Intl.NumberFormat('en-US').format(selectedCoin.price_usd);					
-					return(
-						<div class="aioc-price-label-container">
-							<div class="aioc-price-label-head">
-								<img alt="bitcoin" src={selectedCoin.img} />
-								<p class="aioc-price-label-coin-details">
-									<span class="coin-name">{selectedCoin.name}</span> 
-									<span class="coin-symbol">({selectedCoin.symbol})</span>
-								</p>
+				{ selectedPriceQuery.map( ( selectedCoin ) => {
+					if( className === 'is-style-label-box' || className === undefined ) {
+						return(
+							<div class="aioc-price-label-style-box">
+								<div class="aioc-price-label-head">
+									<img alt="bitcoin" src={selectedCoin.img} />
+									<p class="aioc-price-label-coin-details">
+										<span class="coin-name">{selectedCoin.name}</span> 
+										<span class="coin-symbol">({selectedCoin.symbol})</span>
+									</p>
+								</div>
+								{ selectedRateQuery.map( ( selectedRate ) => {
+									if( selectedRate && selectedRate != null ) {
+										let rateSymbol = selectedRate[0];
+										let ratePrice = selectedRate[1] * Number(selectedCoin.price_usd);
+										let ratePriceFormat = new Intl.NumberFormat('en-US').format(ratePrice);
+										return(
+											<div class="aioc-price-label-body">
+												<p class="aioc-price-label-price-details" data-price={ratePrice} data-live-price={selectedCoin.slug} data-rate={selectedRate[1]} data-currency={rateSymbol} data-timeout="1671302707901">
+													<span class="fiat-symbol">{rateSymbol} </span> 
+													<span class="fiat-price">{ratePriceFormat}</span>
+												</p>
+											</div>
+										);
+									}
+								} ) }
 							</div>
-							<div class="aioc-price-label-body">
-								<p class="aioc-price-label-price-details" data-price="16724.32" data-live-price="bitcoin" data-rate="1.000268" data-currency="USD" data-timeout="1671302707901">
-									<span class="fiat-symbol">$</span> 
-									<span class="fiat-price">{priceFormat}</span>
-								</p>
-							</div>
-						</div>
-					);
+						);
+					}
 				} ) }
 			</div>
 		</div>

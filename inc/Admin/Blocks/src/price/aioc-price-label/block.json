@@ -17,6 +17,10 @@
 		"selectedCoins": {
 			"type": "array",
 			"default": []
+		},
+		"selectedCurrencies": {
+			"type": "array",
+			"default": ["USD"]
 		}
 	},
 	"example": {
@@ -42,6 +46,17 @@
 			}
 		}
 	},
+	"styles": [
+		{
+			"name": "label-box",
+			"label": "Box",
+			"isDefault": true 
+		},
+		{
+			"name": "label-content", 
+			"label": "Content" 
+		}
+	],
 	"textdomain": "aioc-price-label",
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
