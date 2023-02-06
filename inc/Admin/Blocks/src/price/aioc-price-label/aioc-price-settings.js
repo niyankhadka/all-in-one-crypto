@@ -7,7 +7,8 @@ import {
 	PanelBody,
 	PanelRow,
 	Spinner,
-	FormTokenField
+	FormTokenField,
+	SelectControl
  } from '@wordpress/components';
 
 /**
@@ -39,16 +40,19 @@ export class AiocPriceSettings extends Component {
 		super( props );
 		this.state = {
 			coinsData: [],
-			coinsLoading: true
+			coinsLoading: true,
+			ratesData: [],
+			ratesLoading: true
 		};
 	}
  
 	componentDidMount() {
 		this.isStillMounted = true;
-		this.runApiFetch();
+		this.runApiCoinPriceFetch();
+		this.runApiFiatRateFetch();
 	}
  
-	runApiFetch() {
+	runApiCoinPriceFetch() {
 		this.fetchRequest = apiFetch( {
 			path: 'aioc/v1/cryptoprice/query=nasl/slug=all' 
 		} )
@@ -72,14 +76,41 @@ export class AiocPriceSettings extends Component {
 		} );
 	}
 
+	runApiFiatRateFetch() {
+		this.fetchRequest = apiFetch( {
+			path: 'aioc/v1/fiatrate/currency=all'
+		} )
+		.then( ( ratesData ) => {
+			if( this.isStillMounted ) {
+				this.setState( {
+					ratesData: isEmpty( ratesData )
+						? []
+						: ratesData,
+					ratesLoading: false
+				} );
+			}
+		} )
+		.catch( () => {
+			if ( this.isStillMounted ) {
+				this.setState( { 
+					ratesData: [],
+					ratesLoading: false
+				} );
+			}
+		} );
+	}
+
 	componentWillUnmount() {
 		this.isStillMounted = false;
 	}
+ 
+	render() {
 
-	getPanelBody() {
 		const { attributes, setAttributes } = this.props;
 		const {
 			selectedCoins,
+			selectedCurrencies,
+			className
 		} = attributes;
 		const { coinsData } = this.state;
 		const { coinsLoading } = this.state;
@@ -118,54 +149,112 @@ export class AiocPriceSettings extends Component {
 			setAttributes( { selectedCoins: selectedCoinsArray } );
 		};
 
+		const { ratesData } = this.state;
+		const { ratesLoading } = this.state;
+
+		let ratesDataArray = [];
+		let rateNamesArray = [];
+		let rateValuesArray = [];
+
+		if( ratesData !== null ) {
+			ratesDataArray = Object.entries( ratesData );
+			rateNamesArray = ratesDataArray.map( ( ratesList ) => ratesList[0] );
+			rateValuesArray = selectedCurrencies.map( ( selectedCurrency ) => {
+				let wantedRate = ratesDataArray.find( ( ratesList ) => {
+					return ratesList[0] === selectedCurrency;
+				});
+
+				if ( wantedRate === undefined || !wantedRate ) {
+					return false;
+				}
+				return wantedRate[0];
+			} );
+		}
+
+		const onSelectRates = ( selectedCurrencies ) => {
+			let selectedRatesArray = [];
+			selectedCurrencies.map(
+				( rateName ) => {
+					const matchingRate = ratesDataArray.find( ( ratesList ) => {
+						return ratesList[0] === rateName;
+
+					} );
+					if( matchingRate !== undefined ) {
+						selectedRatesArray.push( matchingRate[0] );
+					}
+				}
+			)
+			setAttributes( { selectedCurrencies: selectedRatesArray } );
+		};
+
+		// const onSelectCurrency = ( selectedCurrency ) => {
+		// 	setAttributes( { selectedCurrency: selectedCurrency } );
+		// };
+
+		// const MySelectControl = () => {
+		
+		// 	return (
+		// 		<SelectControl
+		// 			label="Size"
+		// 			value={ selectedCurrency }
+		// 			options={ [
+		// 				{ label: 'Big', value: '100%' },
+		// 				{ label: 'Medium', value: '50%' },
+		// 				{ label: 'Small', value: '25%' },
+		// 			] }
+		// 			onChange={ onSelectCurrency }
+		// 			__nextHasNoMarginBottom
+		// 		/>
+		// 	);
+		// };
+
+		const panelBody = (
+			<PanelBody title={ __( 'General Settings' ) } initialOpen={ true }>
+				<PanelRow>
+					{ coinsLoading ? (
+						<Spinner />
+					) : (
+						<FormTokenField
+							label={ __( 'Select Coins' ) }
+							placeholder={ __( 'Type Coin Name' ) }
+							value={ coinValuesArray }
+							suggestions={ coinNamesArray }
+							maxSuggestions={ 20 }
+							onChange={ onSelectCoins }
+						/>
+					) }
+				</PanelRow>
+				<PanelRow>
+					{ ratesLoading ? (
+						<Spinner />
+					) : (
+						<FormTokenField
+							label={ __( 'Select Currency' ) }
+							placeholder={ __( 'Type Currency' ) }
+							value={ rateValuesArray }
+							suggestions={ rateNamesArray }
+							maxSuggestions={ 20 }
+							onChange={ onSelectRates }
+						/>
+					) }
+				</PanelRow>
+				{ className === 'is-style-fill' && (
+					<PanelRow>
+						This is row 1.1.0
+					</PanelRow>
+				) }
+				{ className === 'is-style-outline' && (
+					<PanelRow>
+						This is row 1.1.1
+					</PanelRow>
+				) }
+			</PanelBody>
+		);
+
 		return(
 			<div>
-                <PanelBody title={ __( 'General Settings' ) } initialOpen={ true }>
-					<PanelRow>
-						{ coinsLoading ? (
-							<Spinner />
-						) : (
-							<FormTokenField
-								label={ __( 'Select Coins' ) }
-								placeholder={ __( 'Type Coin Name' ) }
-								value={ coinValuesArray }
-								suggestions={ coinNamesArray }
-								maxSuggestions={ 20 }
-								onChange={ onSelectCoins }
-							/>
-						) }
-					</PanelRow>
-					<PanelRow>
-						This is row 1.1.
-					</PanelRow>
-                </PanelBody>
-                <PanelBody title={ __( 'Design Settings' ) } initialOpen={ false }>
-                    <PanelBody title={ __( 'Color Settings' ) }>
-                        <PanelRow>
-                            This is row 1.0.
-                        </PanelRow>
-                        <PanelRow>
-                            This is row 1.1.
-                        </PanelRow>
-                    </PanelBody>
-                    <PanelBody title={ __( 'Typography Settings' ) }>
-                        <PanelRow>
-                            This is row 2.0.
-                        </PanelRow>
-                        <PanelRow>
-                            This is row 2.1.
-                        </PanelRow>
-                    </PanelBody>
-                </PanelBody>
+                { panelBody }
 			</div>
 		);
-	}
- 
-	render() {
-
-		return(
-			this.getPanelBody()
-		);
-
 	}
 }

@@ -11,8 +11,7 @@
   background: #fafafa;
 }
 
-.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-container {
-  background: #fafafa;
+.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-style-box {
   border: 1px solid #c8d0d3;
   border-radius: 10px;
   cursor: pointer;
@@ -30,23 +29,23 @@
   box-sizing: border-box;
 }
 
-.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-container .aioc-price-label-head {
+.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-style-box .aioc-price-label-head {
   display: inline-block;
   vertical-align: middle;
   margin-right: 10px;
 }
 
-.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-container .aioc-price-label-head img {
+.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-style-box .aioc-price-label-head img {
   height: 25px;
   margin-bottom: -7px;
   margin-right: 5px;
 }
 
-.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-container .aioc-price-label-head p {
+.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-style-box .aioc-price-label-head p {
   display: inline-block;
 }
 
-.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-container .aioc-price-label-body {
+.wp-block-all-in-one-crypto-aioc-price-label .aioc-price-label-style-box .aioc-price-label-body {
   float: right;
   display: inline-flex;
   align-items: center;

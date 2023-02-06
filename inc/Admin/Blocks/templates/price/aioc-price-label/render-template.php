@@ -24,34 +24,21 @@
 	?>
 <!-- </p> -->
 <div <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?> data-realtime="on">
-	<div class="aioc-price-label-container">
-		<div class="aioc-price-label-head">
-			<img alt="bitcoin" src="https://assets.coingecko.com/coins/images/1/thumb/bitcoin.png" />
-			<p class="aioc-price-label-coin-details">
-				<span class="coin-name">Bitcoin</span> 
-				<span class="coin-symbol">(BTC)</span>
-			</p>
+		
+		<div class="aioc-price-label-style-box">
+			<div class="aioc-price-label-head">
+				<img alt="bitcoin" src="https://assets.coingecko.com/coins/images/1/thumb/bitcoin.png" />
+				<p class="aioc-price-label-coin-details">
+					<span class="coin-name">Bitcoin</span> 
+					<span class="coin-symbol">(BTC)</span>
+				</p>
+			</div>
+			<div class="aioc-price-label-body">
+				<p class="aioc-price-label-price-details" data-price="16724.32" data-live-price="bitcoin" data-rate="1.000268" data-currency="USD" data-timeout="1671302707901">
+					<span class="fiat-symbol">$</span> 
+					<span class="fiat-price">16,728.80</span>
+				</p>
+			</div>
 		</div>
-		<div class="aioc-price-label-body">
-			<p class="aioc-price-label-price-details" data-price="16724.32" data-live-price="bitcoin" data-rate="1.000268" data-currency="USD" data-timeout="1671302707901">
-				<span class="fiat-symbol">$</span> 
-				<span class="fiat-price">16,728.80</span>
-			</p>
-		</div>
-	</div>
-	<div class="aioc-price-label-container">
-		<div class="aioc-price-label-head">
-			<img alt="bitcoin" src="https://assets.coingecko.com/coins/images/1/thumb/bitcoin.png" />
-			<p class="aioc-price-label-coin-details">
-				<span class="coin-name">Bitcoin</span> 
-				<span class="coin-symbol">(BTC)</span>
-			</p>
-		</div>
-		<div class="aioc-price-label-body">
-			<p class="aioc-price-label-price-details" data-price="16724.32" data-live-price="bitcoin" data-rate="1.000268" data-currency="USD" data-timeout="1671302707901">
-				<span class="fiat-symbol">$</span> 
-				<span class="fiat-price">16,728.80</span>
-			</p>
-		</div>
-	</div>
+
 </div>

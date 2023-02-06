@@ -64,6 +64,7 @@ class CryptoPrice extends BaseController
 		add_action( 'aiocRegisterBlocks', array( $this, 'registerPriceBlocks' ) );
 
 		add_action( 'rest_api_init', array( $this, 'registerPriceRestApi' ) );
+		add_action( 'rest_api_init', array( $this, 'registerFiatRateRestApi' ) );
 
 	}
 
@@ -306,7 +307,7 @@ class CryptoPrice extends BaseController
     }
 
 	/**
-	 * Register rest api
+	 * Register crypto prices rest api
      * 
 	 * @since    1.0.0
 	 */
@@ -500,6 +501,126 @@ class CryptoPrice extends BaseController
 		}
 
 		return $response;
+
+	}
+
+	/**
+	 * Register fiat rate rest api
+     * 
+	 * @since    1.0.0
+	 */
+	public function registerFiatRateRestApi() {
+
+		// (?P<query>[a-z]+)/slug=(?P<slug>(?=\S*[-,])([a-z-,]+)|[a-z]+) latest
+		register_rest_route( 'aioc/v1', "/fiatrate/currency=(?P<currency>(?=\S*[,])([a-zA-Z,]+)|[a-zA-Z]+)", [
+			'method' => 'GET',
+			'callback' => [ $this, 'restRouteFiatRate' ],
+			'permission_callback' => '__return_true',
+			'args' => [
+				'query' => array(
+					'sanitize_callback' => function( $param, $request, $key ) {
+						return floatval( $param );
+					},
+					'validate_callback' => function( $param, $request, $key ) {
+						return is_string( $param );
+					}
+				)
+			],
+		]);
+
+	}
+
+	/**
+	 * Return fiat rate api
+     * 
+	 * @since    1.0.0
+	 */
+	public function restRouteFiatRate( $request  ) {
+
+		$request = $request -> get_url_params();
+
+		if( !empty( $request  ) ) {
+
+			$response = $this->queryFiatRates( $request ['currency'] );
+
+			if( empty( $response ) || ! $response ) {
+
+				$response = 'Data Not Found';
+
+			}
+
+		} else {
+
+			$response = 'Invalid Arguments Passed';
+		
+		}
+
+		return rest_ensure_response($response);
+
+	}
+
+	/**
+	 * Get fiat rates from source api
+     * 
+	 * @since    1.0.0
+	 */
+	public function fetchFiatRates() {
+
+		$exrates = get_transient('all-in-one-crypto-fetch-currencies-datatime');
+
+		if ($exrates === false) {
+
+			$request = wp_remote_get('https://api.blocksera.com/v1/exrates');
+
+			if (is_wp_error($request) || wp_remote_retrieve_response_code($request) != 200) {
+				return false;
+			}
+
+			$body = wp_remote_retrieve_body($request);
+			
+			$exrates = json_decode($body,true);
+
+			if ( !empty( $exrates ) ) {
+				set_transient('all-in-one-crypto-fetch-currencies-datatime', $exrates, DAY_IN_SECONDS);
+			}
+
+		}
+
+		unset($exrates['BTC']);
+
+		return $exrates;
+
+	}
+
+	/**
+	 * Query fiat rates
+     * 
+	 * @since    1.0.0
+	 */
+	public function queryFiatRates( $currency ) {
+
+		if( empty( $currency ) ) {
+
+			return false;
+		}
+
+		if( $currency === 'all' ) {
+
+			return $this->fetchFiatRates();
+
+		} elseif( $currency === 'USD' ) {
+
+			return ['USD' => 1];
+
+		} else {
+
+			$currency = explode( ',', $currency );
+			$currency = array_flip( $currency );
+			$fiat_rates = $this->fetchFiatRates();
+
+			return $result = array_intersect_key( $fiat_rates, $currency );
+
+		}
 
 	}
 
