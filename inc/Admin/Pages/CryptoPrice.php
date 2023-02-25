@@ -452,6 +452,11 @@ class CryptoPrice extends BaseController
 			return false;
 		}
 
+		if( !empty( $slug ) ) {
+
+			$wquery = "WHERE `slug` IN ('" . str_replace(",", "','", $slug ) . "') ORDER BY FIELD (`slug`, '" . str_replace(",", "','", $slug ) . "')";
+		};
+
 		switch( $query ) {
 
 			case 'all' :
@@ -463,7 +468,7 @@ class CryptoPrice extends BaseController
 				} else {
 
 					// $response = $this->wpdb->get_row($this->wpdb->prepare( "SELECT * FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
-					$response = $this->wpdb->get_results( "SELECT * FROM `{$this->tablename}` WHERE `slug` IN ('" . str_replace(",", "','", $slug ) . "')" );
+					$response = $this->wpdb->get_results( "SELECT * FROM `{$this->tablename}` " . $wquery);
 
 				}
 				break;
@@ -476,8 +481,7 @@ class CryptoPrice extends BaseController
 					
 				} else {
 
-					$response = $this->wpdb->get_results( "SELECT `name`, `slug` FROM `{$this->tablename}` WHERE `slug` IN ('" . str_replace(",", "','", $slug ) . "')" );
-
+					$response = $this->wpdb->get_results( "SELECT `name`, `slug` FROM `{$this->tablename}` " . $wquery);
 				}
 				break;
 
@@ -490,8 +494,7 @@ class CryptoPrice extends BaseController
 				} else {
 
 					// $response = $this->wpdb->get_row($this->wpdb->prepare( "SELECT `name`, `symbol`, `slug` FROM `{$this->tablename}` WHERE `slug` = %s", $slug ) );
-					$response = $this->wpdb->get_results( "SELECT `name`, `symbol`, `slug` FROM `{$this->tablename}` WHERE `slug` IN ('" . str_replace(",", "','", $slug ) . "')" );
-
+					$response = $this->wpdb->get_results( "SELECT `name`, `symbol`, `slug` FROM `{$this->tablename}` " . $wquery);
 				}
 				break;
 
@@ -618,7 +621,7 @@ class CryptoPrice extends BaseController
 			$currency = array_flip( $currency );
 			$fiat_rates = $this->fetchFiatRates();
 
-			return $result = array_intersect_key( $fiat_rates, $currency );
+			return $result = array_intersect_key( array_replace($currency, $fiat_rates), $currency );
 
 		}
 

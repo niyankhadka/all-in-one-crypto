@@ -540,7 +540,10 @@ function Edit(props) {
         if (selectedRate && selectedRate != null) {
           let rateSymbol = selectedRate[0];
           let ratePrice = selectedRate[1] * Number(selectedCoin.price_usd);
-          let ratePriceFormat = new Intl.NumberFormat('en-US').format(ratePrice);
+          let ratePriceFormat = new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 14
+          }).format(ratePrice);
           return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("div", {
             class: "aioc-price-label-body"
           }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createElement)("p", {
