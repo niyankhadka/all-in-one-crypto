@@ -173,7 +173,7 @@ export default function Edit( props ) {
 									if( selectedRate && selectedRate != null ) {
 										let rateSymbol = selectedRate[0];
 										let ratePrice = selectedRate[1] * Number(selectedCoin.price_usd);
-										let ratePriceFormat = new Intl.NumberFormat('en-US').format(ratePrice);
+										let ratePriceFormat = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 14 }).format(ratePrice);
 										return(
 											<div class="aioc-price-label-body">
 												<p class="aioc-price-label-price-details" data-price={ratePrice} data-live-price={selectedCoin.slug} data-rate={selectedRate[1]} data-currency={rateSymbol} data-timeout="1671302707901">
